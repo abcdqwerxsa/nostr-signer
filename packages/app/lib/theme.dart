@@ -5,7 +5,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class Ink {
+class Sp {
   static const bg = Color(0xFF0B0C0E);
   static const bg2 = Color(0xFF111316);
   static const bg3 = Color(0xFF17191D);
@@ -25,21 +25,21 @@ const mono = 'monospace';
 ThemeData buildTheme() {
   final base = ThemeData.dark(useMaterial3: true);
   return base.copyWith(
-    scaffoldBackgroundColor: Ink.bg,
+    scaffoldBackgroundColor: Sp.bg,
     colorScheme: base.colorScheme.copyWith(
-      primary: Ink.amber,
-      secondary: Ink.amber,
-      surface: Ink.bg2,
-      error: Ink.bad,
+      primary: Sp.amber,
+      secondary: Sp.amber,
+      surface: Sp.bg2,
+      error: Sp.bad,
     ),
     textTheme: base.textTheme.apply(
-      bodyColor: Ink.text,
-      displayColor: Ink.text,
+      bodyColor: Sp.text,
+      displayColor: Sp.text,
       fontFamily: mono,
     ),
     appBarTheme: const AppBarTheme(
-      backgroundColor: Ink.bg,
-      surfaceColor: Ink.bg,
+      backgroundColor: Sp.bg,
+      surfaceColor: Sp.bg,
       elevation: 0,
       scrolledUnderElevation: 0,
       centerTitle: false,
@@ -47,22 +47,22 @@ ThemeData buildTheme() {
         fontFamily: mono,
         fontSize: 13,
         letterSpacing: 3.5,
-        color: Ink.text,
+        color: Sp.text,
         fontWeight: FontWeight.w600,
       ),
       systemOverlayStyle: SystemUiOverlayStyle.light,
     ),
-    dividerTheme: const DividerThemeData(color: Ink.line, thickness: 1, space: 1),
+    dividerTheme: const DividerThemeData(color: Sp.line, thickness: 1, space: 1),
     snackBarTheme: const SnackBarThemeData(
-      backgroundColor: Ink.bg3,
-      contentTextStyle: TextStyle(fontFamily: mono, color: Ink.amber, fontSize: 13),
+      backgroundColor: Sp.bg3,
+      contentTextStyle: TextStyle(fontFamily: mono, color: Sp.amber, fontSize: 13),
       behavior: SnackBarBehavior.floating,
     ),
   );
 }
 
 /// 大写间距小标 —— 面板眉标
-Widget eyebrow(String text, {Color color = Ink.amber}) => Text(
+Widget eyebrow(String text, {Color color = Sp.amber}) => Text(
       text.toUpperCase(),
       style: TextStyle(
         fontFamily: mono,
@@ -74,7 +74,7 @@ Widget eyebrow(String text, {Color color = Ink.amber}) => Text(
     );
 
 /// 状态胶囊
-Widget pill(String text, {Color color = Ink.textDim}) => Container(
+Widget pill(String text, {Color color = Sp.textDim}) => Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(border: Border.all(color: color)),
       child: Text(

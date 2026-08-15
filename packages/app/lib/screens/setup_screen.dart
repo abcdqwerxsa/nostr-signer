@@ -84,15 +84,15 @@ class _SetupScreenState extends State<SetupScreen> {
                           children: [
                             RichText(
                               text: const TextSpan(
-                                style: TextStyle(fontFamily: mono, fontSize: 18, letterSpacing: 5, color: Ink.text, fontWeight: FontWeight.w600),
+                                style: TextStyle(fontFamily: mono, fontSize: 18, letterSpacing: 5, color: Sp.text, fontWeight: FontWeight.w600),
                                 children: [
                                   TextSpan(text: 'SIGN'),
-                                  TextSpan(text: 'POST', style: TextStyle(color: Ink.amber)),
+                                  TextSpan(text: 'POST', style: TextStyle(color: Sp.amber)),
                                 ],
                               ),
                             ),
                             const SizedBox(height: 3),
-                            eyebrow('BUNKER APPROVAL TERMINAL', color: Ink.textFaint),
+                            eyebrow('BUNKER APPROVAL TERMINAL', color: Sp.textFaint),
                           ],
                         ),
                       ],
@@ -106,7 +106,7 @@ class _SetupScreenState extends State<SetupScreen> {
                           const SizedBox(height: 6),
                           Text(
                             '在控制台 DEVICE PAIRING 面板复制三段式配对串粘贴到此处，或分别填写以下三项。',
-                            style: TextStyle(fontFamily: mono, fontSize: 11, color: Ink.textDim, height: 1.8),
+                            style: TextStyle(fontFamily: mono, fontSize: 11, color: Sp.textDim, height: 1.8),
                           ),
                           const SizedBox(height: 14),
                           _field(_pairing, 'PAIRING STRING', 'api|pubkey|token'),
@@ -120,7 +120,7 @@ class _SetupScreenState extends State<SetupScreen> {
                             const SizedBox(height: 14),
                             Text(
                               '✕$_error',
-                              style: const TextStyle(fontFamily: mono, fontSize: 11, color: Ink.bad, height: 1.7),
+                              style: const TextStyle(fontFamily: mono, fontSize: 11, color: Sp.bad, height: 1.7),
                             ),
                           ],
                           const SizedBox(height: 18),
@@ -129,13 +129,13 @@ class _SetupScreenState extends State<SetupScreen> {
                             child: ElevatedButton(
                               onPressed: _busy ? null : _link,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Ink.amber,
-                                foregroundColor: Ink.bg,
-                                shape: const RoundedRectangleBorder(side: BorderSide(color: Ink.amber)),
+                                backgroundColor: Sp.amber,
+                                foregroundColor: Sp.bg,
+                                shape: const RoundedRectangleBorder(side: BorderSide(color: Sp.amber)),
                                 elevation: 0,
                               ),
                               child: _busy
-                                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Ink.bg))
+                                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Sp.bg))
                                   : const Text('LINK / 接入', style: TextStyle(fontFamily: mono, fontSize: 12, letterSpacing: 3, fontWeight: FontWeight.w700)),
                             ),
                           ),
@@ -146,7 +146,7 @@ class _SetupScreenState extends State<SetupScreen> {
                     Center(
                       child: Text(
                         'KEYS SEALED · AES-GCM/HKDF · NIP-46',
-                        style: TextStyle(fontFamily: mono, fontSize: 9, letterSpacing: 2, color: Ink.textFaint),
+                        style: TextStyle(fontFamily: mono, fontSize: 9, letterSpacing: 2, color: Sp.textFaint),
                       ),
                     ),
                   ],
@@ -163,21 +163,21 @@ class _SetupScreenState extends State<SetupScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        eyebrow(label, color: Ink.textDim),
+        eyebrow(label, color: Sp.textDim),
         const SizedBox(height: 6),
         TextField(
           controller: c,
           obscureText: obscure,
-          style: const TextStyle(fontFamily: mono, fontSize: 12, color: Ink.amber),
+          style: const TextStyle(fontFamily: mono, fontSize: 12, color: Sp.amber),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: const TextStyle(fontFamily: mono, fontSize: 11, color: Ink.textFaint),
+            hintStyle: const TextStyle(fontFamily: mono, fontSize: 11, color: Sp.textFaint),
             isDense: true,
             filled: true,
-            fillColor: Ink.bg,
-            border: OutlineInputBorder(borderSide: const BorderSide(color: Ink.line2), borderRadius: BorderRadius.zero),
-            enabledBorder: OutlineInputBorder(borderSide: const BorderSide(color: Ink.line2), borderRadius: BorderRadius.zero),
-            focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Ink.amber)),
+            fillColor: Sp.bg,
+            border: OutlineInputBorder(borderSide: const BorderSide(color: Sp.line2), borderRadius: BorderRadius.zero),
+            enabledBorder: OutlineInputBorder(borderSide: const BorderSide(color: Sp.line2), borderRadius: BorderRadius.zero),
+            focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Sp.amber)),
             contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           ),
           inputFormatters: [LengthLimitingTextInputFormatter(200)],
@@ -204,7 +204,7 @@ class _MarkPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Ink.amber
+      ..color = Sp.amber
       ..strokeWidth = 2.2
       ..style = PaintingStyle.stroke;
     canvas.drawRect(Offset.zero & size, paint);

@@ -91,7 +91,8 @@ class BunkerStatus {
   final List<({String url, String state})> relays;
   final int pendingCount;
   final int sessions;
-  final int get linkedRelays => relays.where((r) => r.state == 'open').length;
+
+  int get linkedRelays => relays.where((r) => r.state == 'open').length;
 
   factory BunkerStatus.fromJson(Map<String, Object?> j) => BunkerStatus(
         pubkeyNpub: j['pubkeyNpub'] as String? ?? '',

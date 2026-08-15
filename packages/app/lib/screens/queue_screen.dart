@@ -92,11 +92,11 @@ class _QueueScreenState extends State<QueueScreen> {
       body: GridBackground(
         child: SafeArea(
           child: RefreshIndicator(
-            color: Ink.amber,
-            backgroundColor: Ink.bg2,
+            color: Sp.amber,
+            backgroundColor: Sp.bg2,
             onRefresh: _refresh,
             child: _loading
-                ? const Center(child: CircularProgressIndicator(color: Ink.amber))
+                ? const Center(child: CircularProgressIndicator(color: Sp.amber))
                 : ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.fromLTRB(20, 18, 20, 32),
@@ -108,7 +108,7 @@ class _QueueScreenState extends State<QueueScreen> {
                           padding: const EdgeInsets.only(bottom: 16),
                           child: Text(
                             'LINK ERROR / $_error',
-                            style: const TextStyle(fontFamily: mono, fontSize: 11, color: Ink.bad, height: 1.7),
+                            style: const TextStyle(fontFamily: mono, fontSize: 11, color: Sp.bad, height: 1.7),
                           ),
                         ),
                       if (live.isEmpty) _emptyState(),
@@ -136,32 +136,32 @@ class _QueueScreenState extends State<QueueScreen> {
         const SizedBox(width: 12),
         RichText(
           text: TextSpan(
-            style: const TextStyle(fontFamily: mono, fontSize: 15, letterSpacing: 4, color: Ink.text, fontWeight: FontWeight.w600),
+            style: const TextStyle(fontFamily: mono, fontSize: 15, letterSpacing: 4, color: Sp.text, fontWeight: FontWeight.w600),
             children: const [
               TextSpan(text: 'SIGN'),
-              TextSpan(text: 'POST', style: TextStyle(color: Ink.amber)),
+              TextSpan(text: 'POST', style: TextStyle(color: Sp.amber)),
             ],
           ),
         ),
         const SizedBox(width: 12),
-        count > 0 ? pill('$count PENDING', color: Ink.amber) : pill('ALL CLEAR', color: Ink.ok),
+        count > 0 ? pill('$count PENDING', color: Sp.amber) : pill('ALL CLEAR', color: Sp.ok),
         const Spacer(),
         IconButton(
           visualDensity: VisualDensity.compact,
           onPressed: () => showDialog(
             context: context,
             builder: (_) => AlertDialog(
-              backgroundColor: Ink.bg2,
-              shape: RoundedRectangleBorder(side: BorderSide(color: Ink.line2)),
+              backgroundColor: Sp.bg2,
+              shape: RoundedRectangleBorder(side: BorderSide(color: Sp.line2)),
               title: const Text('解除配对？', style: TextStyle(fontFamily: mono, fontSize: 14)),
-              content: const Text('清除本机保存的 device token。', style: TextStyle(fontFamily: mono, fontSize: 12, color: Ink.textDim)),
+              content: const Text('清除本机保存的 device token。', style: TextStyle(fontFamily: mono, fontSize: 12, color: Sp.textDim)),
               actions: [
                 TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-                TextButton(onPressed: () => widget.onUnpair(), child: const Text('解除', style: TextStyle(color: Ink.bad))),
+                TextButton(onPressed: () => widget.onUnpair(), child: const Text('解除', style: TextStyle(color: Sp.bad))),
               ],
             ),
           ),
-          icon: const Icon(Icons.link_off, size: 18, color: Ink.textDim),
+          icon: const Icon(Icons.link_off, size: 18, color: Sp.textDim),
         ),
       ],
     );
@@ -177,12 +177,12 @@ class _QueueScreenState extends State<QueueScreen> {
           const SizedBox(height: 18),
           Text(
             '哨位无待审批请求',
-            style: TextStyle(fontFamily: mono, fontSize: 12, letterSpacing: 2, color: Ink.textDim),
+            style: TextStyle(fontFamily: mono, fontSize: 12, letterSpacing: 2, color: Sp.textDim),
           ),
           const SizedBox(height: 8),
           Text(
             'SIGNING REQUESTS WILL APPEAR HERE',
-            style: TextStyle(fontFamily: mono, fontSize: 9, letterSpacing: 2.4, color: Ink.textFaint),
+            style: TextStyle(fontFamily: mono, fontSize: 9, letterSpacing: 2.4, color: Sp.textFaint),
           ),
         ],
       ),
@@ -223,23 +223,23 @@ class _ApprovalCardState extends State<_ApprovalCard> {
             children: [
               Text(
                 request.method,
-                style: const TextStyle(fontFamily: mono, fontSize: 13, letterSpacing: 1.2, color: Ink.amber, fontWeight: FontWeight.w700),
+                style: const TextStyle(fontFamily: mono, fontSize: 13, letterSpacing: 1.2, color: Sp.amber, fontWeight: FontWeight.w700),
               ),
               const SizedBox(width: 10),
               if (request.summary['kind'] != null) pill('KIND ${request.summary['kind']}'),
               const Spacer(),
-              const Beacon(color: Ink.amber),
+              const Beacon(color: Sp.amber),
             ],
           ),
           const SizedBox(height: 8),
           Text(
             request.headline,
-            style: const TextStyle(fontFamily: mono, fontSize: 12, color: Ink.text, height: 1.6),
+            style: const TextStyle(fontFamily: mono, fontSize: 12, color: Sp.text, height: 1.6),
           ),
           const SizedBox(height: 4),
           Text(
             'FROM ${request.clientNpub.substring(0, request.clientNpub.length.clamp(0, 20))}…',
-            style: const TextStyle(fontFamily: mono, fontSize: 10, color: Ink.textFaint, letterSpacing: 1),
+            style: const TextStyle(fontFamily: mono, fontSize: 10, color: Sp.textFaint, letterSpacing: 1),
           ),
           if (body != null && body.isNotEmpty) ...[
             const SizedBox(height: 12),
@@ -247,11 +247,11 @@ class _ApprovalCardState extends State<_ApprovalCard> {
               width: double.infinity,
               constraints: const BoxConstraints(maxHeight: 140),
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: Ink.bg, border: Border.all(color: Ink.line)),
+              decoration: BoxDecoration(color: Sp.bg, border: Border.all(color: Sp.line)),
               child: SingleChildScrollView(
                 child: Text(
                   body,
-                  style: const TextStyle(fontFamily: mono, fontSize: 11, color: Ink.textDim, height: 1.6),
+                  style: const TextStyle(fontFamily: mono, fontSize: 11, color: Sp.textDim, height: 1.6),
                 ),
               ),
             ),
@@ -263,7 +263,7 @@ class _ApprovalCardState extends State<_ApprovalCard> {
               padding: const EdgeInsets.only(top: 10),
               child: Text(
                 _expanded ? '▾ 收起详情' : '▸ 请求详情',
-                style: const TextStyle(fontFamily: mono, fontSize: 10, letterSpacing: 1.4, color: Ink.textDim),
+                style: const TextStyle(fontFamily: mono, fontSize: 10, letterSpacing: 1.4, color: Sp.textDim),
               ),
             ),
           ),
@@ -272,10 +272,10 @@ class _ApprovalCardState extends State<_ApprovalCard> {
               width: double.infinity,
               margin: const EdgeInsets.only(top: 8),
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: Ink.bg, border: Border.all(color: Ink.line2)),
+              decoration: BoxDecoration(color: Sp.bg, border: Border.all(color: Sp.line2)),
               child: Text(
                 const JsonEncoder.withIndent('  ').convert(request.summary),
-                style: const TextStyle(fontFamily: mono, fontSize: 10, color: Ink.textDim, height: 1.7),
+                style: const TextStyle(fontFamily: mono, fontSize: 10, color: Sp.textDim, height: 1.7),
               ),
             ),
           const SizedBox(height: 14),
@@ -290,10 +290,10 @@ class _ApprovalCardState extends State<_ApprovalCard> {
                 child: SizedBox(
                   height: 44,
                   child: OutlinedButton(
-                    onPressed: busy ? null : onDeny,
+                    onPressed: widget.busy ? null : widget.onDeny,
                     style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Ink.bad),
-                      foregroundColor: Ink.bad,
+                      side: const BorderSide(color: Sp.bad),
+                      foregroundColor: Sp.bad,
                       shape: const RoundedRectangleBorder(),
                       elevation: 0,
                     ),
@@ -306,16 +306,16 @@ class _ApprovalCardState extends State<_ApprovalCard> {
                 child: SizedBox(
                   height: 44,
                   child: OutlinedButton(
-                    onPressed: busy ? null : onAllow,
+                    onPressed: widget.busy ? null : widget.onAllow,
                     style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Ink.amber),
-                      backgroundColor: Ink.amber,
-                      foregroundColor: Ink.bg,
+                      side: const BorderSide(color: Sp.amber),
+                      backgroundColor: Sp.amber,
+                      foregroundColor: Sp.bg,
                       shape: const RoundedRectangleBorder(),
                       elevation: 0,
                     ),
-                    child: busy
-                        ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Ink.bg))
+                    child: widget.busy
+                        ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Sp.bg))
                         : const Text('APPROVE 批准', style: TextStyle(fontFamily: mono, fontSize: 11, letterSpacing: 2, fontWeight: FontWeight.w700)),
                   ),
                 ),
@@ -347,7 +347,7 @@ class _SmallMarkPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Ink.amber
+      ..color = Sp.amber
       ..strokeWidth = 1.8
       ..style = PaintingStyle.stroke;
     canvas.drawRect(Offset.zero & size, paint);

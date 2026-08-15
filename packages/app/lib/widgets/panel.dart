@@ -17,8 +17,8 @@ class BracketPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: Ink.line),
-        color: Ink.bg2,
+        border: Border.all(color: Sp.line),
+        color: Sp.bg2,
       ),
       padding: padding,
       child: Stack(
@@ -61,7 +61,7 @@ class _CornerPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Ink.amber
+      ..color = Sp.amber
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
     final path = Path();
@@ -109,7 +109,7 @@ class _GridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Ink.bg3
+      ..color = Sp.bg3
       ..strokeWidth = 1;
     const cell = 44.0;
     for (double x = 0; x < size.width; x += cell) {
@@ -134,7 +134,7 @@ class CountdownBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final frac = (remaining / total).clamp(0.0, 1.0);
-    final color = frac > 0.4 ? Ink.amber : frac > 0.2 ? Colors.orange : Ink.bad;
+    final color = frac > 0.4 ? Sp.amber : frac > 0.2 ? Colors.orange : Sp.bad;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -147,7 +147,7 @@ class CountdownBar extends StatelessWidget {
             const Spacer(),
             Text(
               'EXPIRES',
-              style: TextStyle(fontFamily: mono, fontSize: 9, color: Ink.textFaint, letterSpacing: 1.6),
+              style: TextStyle(fontFamily: mono, fontSize: 9, color: Sp.textFaint, letterSpacing: 1.6),
             ),
           ],
         ),
@@ -166,7 +166,7 @@ class CountdownBar extends StatelessWidget {
 
 /// 空闲信标：呼吸脉冲点
 class Beacon extends StatefulWidget {
-  const Beacon({super.key, this.color = Ink.ok});
+  const Beacon({super.key, this.color = Sp.ok});
 
   final Color color;
 

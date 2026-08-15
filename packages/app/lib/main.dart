@@ -66,7 +66,7 @@ class _GateState extends State<_Gate> {
   Widget build(BuildContext context) {
     if (!_loaded) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator(color: Ink.amber)),
+        body: Center(child: CircularProgressIndicator(color: Sp.amber)),
       );
     }
     final api = _api;
