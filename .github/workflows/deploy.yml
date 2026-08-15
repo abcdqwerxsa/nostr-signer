@@ -1,0 +1,32 @@
+name: Deploy Bunker
+
+# 手动部署：需要仓库 secret CLOUDFLARE_API_TOKEN（wrangler 权限）
+# 以及 BUNKER_KEK / ADMIN_TOKEN 已在 Cloudflare 侧配置（wrangler secret put）
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Test before deploy
+        run: pnpm --filter bunker test
+
+      - name: Deploy
+        run: pnpm --filter bunker exec wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

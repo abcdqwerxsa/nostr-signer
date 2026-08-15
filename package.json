@@ -1,0 +1,12 @@
+{
+  "name": "nostr-signer",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@11.8.0",
+  "scripts": {
+    "dev": "pnpm --filter bunker dev",
+    "deploy": "pnpm --filter bunker deploy",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck"
+  }
+}

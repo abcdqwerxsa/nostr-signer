@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SIGNPOST · Nostr Bunker 控制台</title>
+<style>
+  /* ============================================================
+     SIGNPOST 视觉语言 —— 仪器面板 / 磷光琥珀
+     深墨底 + 琥珀单色强调 + 等宽字体 + 角标记与蓝图网格。
+     刻意避免：圆角卡片阴影堆砌、渐变、通用后台模板感。
+     ============================================================ */
+  :root {
+    --ink: #0b0c0e;
+    --ink-2: #111316;
+    --ink-3: #17191d;
+    --line: #26282d;
+    --line-2: #33363c;
+    --amber: #ffb224;
+    --amber-dim: #8f6413;
+    --text: #d6d3cb;
+    --text-dim: #8a877f;
+    --text-faint: #55534d;
+    --ok: #7ee081;
+    --bad: #ff6b5e;
+    --mono: ui-monospace, "SFMono-Regular", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--ink); color: var(--text); font-family: var(--mono); font-size: 14px; }
+  body {
+    min-height: 100vh;
+    background-image:
+      linear-gradient(var(--ink-2) 1px, transparent 1px),
+      linear-gradient(90deg, var(--ink-2) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+  ::selection { background: var(--amber); color: var(--ink); }
+
+  /* ---- 页头：仪表眉标 ---- */
+  header {
+    border-bottom: 1px solid var(--line-2);
+    background: linear-gradient(transparent 0, var(--ink) 30%);
+    padding: 26px 32px 20px;
+    display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap;
+  }
+  .mark { display: flex; align-items: center; gap: 12px; }
+  .mark svg { display: block; }
+  h1 { font-size: 17px; letter-spacing: .38em; font-weight: 600; color: var(--text); }
+  h1 b { color: var(--amber); font-weight: 600; }
+  .sub { color: var(--text-faint); font-size: 11px; letter-spacing: .18em; }
+  .spacer { flex: 1; }
+  .token-box { display: flex; gap: 0; border: 1px solid var(--line-2); }
+  .token-box input {
+    background: var(--ink); border: 0; color: var(--amber); font-family: var(--mono);
+    font-size: 12px; padding: 8px 12px; width: 230px; letter-spacing: .08em;
+  }
+  .token-box input:focus { outline: 1px solid var(--amber); }
+  .token-box button { border-left: 1px solid var(--line-2); }
+
+  /* ---- 通用 ---- */
+  button {
+    background: transparent; border: 1px solid var(--line-2); color: var(--text);
+    font-family: var(--mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase;
+    padding: 8px 16px; cursor: pointer; transition: none;
+  }
+  button:hover { border-color: var(--amber); color: var(--amber); }
+  button:active { background: var(--amber); color: var(--ink); }
+  button.primary { border-color: var(--amber); color: var(--amber); }
+  button.primary:hover { background: var(--amber); color: var(--ink); }
+  button.danger:hover { border-color: var(--bad); color: var(--bad); }
+  button:disabled { opacity: .35; cursor: not-allowed; }
+  input[type=text], textarea, select {
+    background: var(--ink-2); border: 1px solid var(--line-2); color: var(--text);
+    font-family: var(--mono); font-size: 12px; padding: 8px 10px; width: 100%;
+  }
+  input[type=text]:focus, textarea:focus { outline: 1px solid var(--amber); }
+  label { display: block; font-size: 10px; letter-spacing: .2em; color: var(--text-dim); text-transform: uppercase; margin-bottom: 6px; }
+
+  main { max-width: 1060px; margin: 0 auto; padding: 28px 32px 80px; }
+
+  /* ---- 角标记面板 ---- */
+  .panel { position: relative; border: 1px solid var(--line); background: color-mix(in srgb, var(--ink) 82%, transparent); padding: 20px 22px; margin-bottom: 26px; }
+  .panel::before, .panel::after {
+    content: ""; position: absolute; width: 9px; height: 9px; pointer-events: none;
+  }
+  .panel::before { top: -1px; left: -1px; border-top: 2px solid var(--amber); border-left: 2px solid var(--amber); }
+  .panel::after { bottom: -1px; right: -1px; border-bottom: 2px solid var(--amber); border-right: 2px solid var(--amber); }
+  .panel h2 {
+    font-size: 11px; letter-spacing: .3em; color: var(--amber); font-weight: 500;
+    margin-bottom: 16px; display: flex; align-items: center; gap: 10px;
+  }
+  .panel h2 .tag { color: var(--text-faint); letter-spacing: .1em; font-size: 10px; }
+
+  .row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .row > * { flex: 1; min-width: 220px; }
+
+  /* ---- 数据表 ---- */
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { text-align: left; font-size: 10px; letter-spacing: .18em; color: var(--text-faint); text-transform: uppercase; padding: 6px 10px; border-bottom: 1px solid var(--line-2); }
+  td { padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:hover td { background: var(--ink-2); }
+  .mono-dim { color: var(--text-dim); }
+  .ellipsis { max-width: 340px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .pill { display: inline-block; font-size: 10px; letter-spacing: .14em; padding: 2px 8px; border: 1px solid var(--line-2); color: var(--text-dim); }
+  .pill.ok { border-color: var(--ok); color: var(--ok); }
+  .pill.down { border-color: var(--bad); color: var(--bad); }
+  .pill.amber { border-color: var(--amber); color: var(--amber); }
+
+  /* ---- 待审批卡片 ---- */
+  .approval { border: 1px solid var(--line-2); padding: 14px 16px; margin-bottom: 12px; background: var(--ink-2); }
+  .approval .head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .approval .method { color: var(--amber); letter-spacing: .1em; }
+  .approval .meta { color: var(--text-faint); font-size: 11px; }
+  .approval pre {
+    background: var(--ink); border: 1px solid var(--line); padding: 10px 12px;
+    font-size: 11px; overflow-x: auto; color: var(--text-dim); margin-bottom: 10px;
+    max-height: 180px;
+  }
+  .approval .actions { display: flex; gap: 10px; }
+  .empty { color: var(--text-faint); font-size: 12px; padding: 18px 0; text-align: center; letter-spacing: .14em; }
+
+  /* ---- 创建成功横幅 ---- */
+  .created { border: 1px dashed var(--amber-dim); background: color-mix(in srgb, var(--amber) 6%, transparent); padding: 16px 18px; margin-bottom: 12px; }
+  .created .big { color: var(--amber); word-break: break-all; font-size: 12px; line-height: 1.7; }
+  .created .note { color: var(--text-dim); font-size: 11px; margin-top: 8px; line-height: 1.7; }
+  .copyline { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+  .copyline input { flex: 1; color: var(--amber); }
+
+  /* ---- 通知条 ---- */
+  #toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 9;
+    border: 1px solid var(--amber); color: var(--amber); background: var(--ink);
+    padding: 10px 18px; font-size: 12px; letter-spacing: .1em; display: none;
+  }
+
+  .hidden { display: none !important; }
+  a { color: var(--amber); text-decoration: none; border-bottom: 1px dotted var(--amber-dim); }
+  footer { color: var(--text-faint); font-size: 10px; letter-spacing: .18em; text-align: center; padding: 30px 0 40px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="mark">
+    <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+      <rect x="1" y="1" width="24" height="24" stroke="#ffb224" stroke-width="1.5"/>
+      <path d="M7 19V7l6 6 6-6v12" stroke="#ffb224" stroke-width="1.5" fill="none"/>
+    </svg>
+    <h1>SIGN<b>POST</b></h1>
+  </div>
+  <span class="sub">NOSTR REMOTE SIGNER · BUNKER CONSOLE</span>
+  <div class="spacer"></div>
+  <div class="token-box">
+    <input id="adminToken" type="text" placeholder="ADMIN TOKEN" autocomplete="off" />
+    <button id="saveToken">接入</button>
+  </div>
+</header>
+
+<main>
+  <!-- 身份区 -->
+  <section class="panel" id="identityPanel">
+    <h2>IDENTITY / 签名器身份 <span class="tag" id="statusTag">未接入</span></h2>
+    <div id="identityEmpty">
+      <p style="color:var(--text-dim);font-size:12px;line-height:1.9;margin-bottom:16px">
+        输入 ADMIN TOKEN 接入控制台。之后可生成新密钥，或导入已有的 64 位 hex 私钥。
+      </p>
+    </div>
+    <div id="identityData" class="hidden">
+      <div class="row" style="margin-bottom:14px">
+        <div><label>NPUB</label><div class="copyline"><input id="npubOut" readonly /><button data-copy="npubOut">复制</button></div></div>
+      </div>
+      <div class="row" style="margin-bottom:14px">
+        <div style="flex:2"><label>BUNKER URI（粘贴到 Damus / Amethyst 等 Nostr Connect 客户端）</label>
+          <div class="copyline"><input id="uriOut" readonly /><button data-copy="uriOut">复制</button></div></div>
+      </div>
+      <div class="row" id="relayRow"></div>
+    </div>
+    <div id="createForm" style="margin-top:18px;border-top:1px solid var(--line);padding-top:18px">
+      <div class="row">
+        <div><label>导入私钥（64 位 hex，留空则生成新密钥）</label><input id="importHex" type="text" placeholder="d0e1…（hex）" autocomplete="off" /></div>
+        <div><label>CONNECT SECRET（可选，客户端连接口令）</label><input id="connectSecret" type="text" placeholder="留空表示不启用" autocomplete="off" /></div>
+        <div style="flex:0;min-width:auto;display:flex;align-items:flex-end"><button class="primary" id="createBtn">部署 Bunker</button></div>
+      </div>
+      <div id="createdBox" class="created hidden"></div>
+    </div>
+  </section>
+
+  <!-- 审批队列 -->
+  <section class="panel">
+    <h2>APPROVAL QUEUE / 待审批请求 <span class="tag" id="pendingTag">—</span>
+      <span class="spacer" style="flex:1"></span>
+      <button id="refreshBtn" style="font-size:10px;padding:4px 12px">刷新</button>
+    </h2>
+    <div id="pendingList"><div class="empty">无待审批请求</div></div>
+  </section>
+
+  <!-- 会话 -->
+  <section class="panel">
+    <h2>SESSIONS / 已授权客户端</h2>
+    <table>
+      <thead><tr><th>客户端 NPUB</th><th>权限声明</th><th>最近活跃</th><th></th></tr></thead>
+      <tbody id="sessionBody"><tr><td colspan="4" class="empty">暂无会话</td></tr></tbody>
+    </table>
+  </section>
+
+  <!-- 策略 -->
+  <section class="panel">
+    <h2>POLICY / 签名策略</h2>
+    <div class="row">
+      <div>
+        <label>默认效果（无会话授权时）</label>
+        <select id="defaultEffect">
+          <option value="require_approval">require_approval（每次进审批队列）</option>
+          <option value="allow">allow（自动放行）</option>
+          <option value="deny">deny（自动拒绝）</option>
+        </select>
+      </div>
+      <div>
+        <label>自动放行的 kind（逗号分隔）</label>
+        <input id="autoKinds" type="text" placeholder="0, 3, 10002" />
+      </div>
+      <div>
+        <label>消息加解密（nip04/nip44）</label>
+        <select id="ephemeral">
+          <option value="true">需要审批</option>
+          <option value="false">自动放行</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:16px"><button class="primary" id="savePolicy">保存策略</button></div>
+  </section>
+
+  <!-- 设备配对 -->
+  <section class="panel">
+    <h2>DEVICE PAIRING / 移动审批 App 配对</h2>
+    <p style="color:var(--text-dim);font-size:12px;line-height:1.9;margin-bottom:12px">
+      审批 App（本仓库 <b style="color:var(--amber)">app/</b>）需要三个参数。Device token 只在创建时完整显示一次；
+      若丢失可轮换。
+    </p>
+    <div class="row">
+      <div><label>API BASE</label><div class="copyline"><input id="pairApi" readonly /><button data-copy="pairApi">复制</button></div></div>
+      <div><label>PUBKEY</label><div class="copyline"><input id="pairPubkey" readonly /><button data-copy="pairPubkey">复制</button></div></div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <div><label>DEVICE TOKEN</label><div class="copyline"><input id="pairToken" readonly placeholder="创建时显示一次，或点右侧轮换" /><button data-copy="pairToken">复制</button></div></div>
+      <div style="flex:0;min-width:auto;display:flex;align-items:flex-end"><button class="danger" id="rotateBtn">轮换 Token</button></div>
+    </div>
+  </section>
+
+  <!-- 审计 -->
+  <section class="panel">
+    <h2>AUDIT / 审计日志</h2>
+    <table>
+      <thead><tr><th>时间</th><th>事件</th><th>决议</th><th>详情</th></tr></thead>
+      <tbody id="auditBody"><tr><td colspan="4" class="empty">暂无记录</td></tr></tbody>
+    </table>
+  </section>
+
+  <footer>SIGNPOST · SELF-HOSTED NIP-46 BUNKER · KEYS SEALED WITH AES-GCM / HKDF</footer>
+</main>
+
+<div id="toast"></div>
+
+<script>
+/* ====================================================================
+ * 控制台逻辑：极简 fetch 封装 + 渲染函数。
+ * 无框架、无构建步骤 —— 单文件即完整功能。
+ * ==================================================================== */
+const $ = (id) => document.getElementById(id)
+const state = { token: localStorage.getItem('signpost_admin') ?? '', pubkey: null, timer: null }
+
+function toast(msg, ok = true) {
+  const t = $('toast')
+  t.textContent = msg
+  t.style.borderColor = ok ? 'var(--ok)' : 'var(--bad)'
+  t.style.color = ok ? 'var(--ok)' : 'var(--bad)'
+  t.style.display = 'block'
+  clearTimeout(t._h)
+  t._h = setTimeout(() => (t.style.display = 'none'), 2600)
+}
+
+async function api(path, opts = {}) {
+  const res = await fetch(path, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + state.token, ...(opts.headers ?? {}) },
+  })
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(data.error ?? res.status)
+  return data
+}
+
+function fmtTime(ts) {
+  if (!ts) return '—'
+  const d = new Date(Number(ts))
+  return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
+/* ---- 刷新状态 ---- */
+async function refresh() {
+  if (!state.token || !state.pubkey) return
+  let s
+  try { s = await api(`/api/admin/bunkers/${state.pubkey}`) }
+  catch (e) { $('statusTag').textContent = '查询失败: ' + e.message; return }
+
+  $('statusTag').textContent = '在线 · ' + (s.relays?.filter(r => r.state === 'open').length ?? 0) + '/' + (s.relays?.length ?? 0) + ' relays'
+  $('pendingTag').textContent = s.pendingCount + ' 项待处理'
+
+  $('npubOut').value = s.pubkeyNpub ?? ''
+  const relays = s.relays ?? []
+  $('uriOut').value = (s.pubkeyNpub ? 'bunker://' + s.pubkeyNpub : '')
+    + relays.map(r => '&relay=' + encodeURIComponent(r.url)).join('')
+    + (localStorage.getItem('signpost_cs') ? '&secret=' + encodeURIComponent(localStorage.getItem('signpost_cs')) : '')
+  $('relayRow').innerHTML = relays.map(r =>
+    `<div><span class="pill ${r.state === 'open' ? 'ok' : 'down'}">${r.state === 'open' ? 'LINKED' : 'DOWN'}</span>
+     <span class="mono-dim" style="margin-left:8px;font-size:11px">${r.url}</span></div>`).join('')
+
+  $('sessionBody').innerHTML = (s.sessions ?? []).length
+    ? s.sessions.map(x => `<tr>
+        <td class="ellipsis" title="${x.client}">${x.clientNpub}</td>
+        <td class="mono-dim">${x.perms || '—'}</td>
+        <td class="mono-dim">${fmtTime(x.lastSeenAt)}</td>
+        <td><button class="danger" style="padding:3px 10px" onclick="revoke('${x.client}')">吊销</button></td>
+      </tr>`).join('')
+    : '<tr><td colspan="4" class="empty">暂无会话</td></tr>'
+
+  // 审批队列（admin 路由，无需 device token）
+  const p = await api(`/api/admin/bunkers/${state.pubkey}/pending`).catch(() => ({ requests: [] }))
+  const list = p.requests ?? []
+  $('pendingList').innerHTML = list.length
+    ? list.map(r => `<div class="approval">
+        <div class="head">
+          <span class="method">${r.method}</span>
+          <span class="pill amber">${r.summary?.kind !== undefined ? 'kind ' + r.summary.kind : 'RPC'}</span>
+          <span class="meta">${r.clientNpub.slice(0, 16)}… · ${fmtTime(r.createdAt)} · ${Math.max(0, Math.round((r.expiresAt - Date.now()) / 1000))}s 后超时</span>
+        </div>
+        <pre>${JSON.stringify(r.summary, null, 2)}</pre>
+        <div class="actions">
+          <button class="primary" onclick="decide('${r.rpcId}', true)">批准签名</button>
+          <button class="danger" onclick="decide('${r.rpcId}', false)">拒绝</button>
+        </div>
+      </div>`).join('')
+    : '<div class="empty">无待审批请求</div>'
+
+  // 策略
+  if (!$('#defaultEffect').dataset.loaded) {
+    $('defaultEffect').value = s.settings?.defaultEffect ?? 'require_approval'
+    $('autoKinds').value = (s.settings?.autoAllowKinds ?? []).join(', ')
+    $('ephemeral').value = String(s.settings?.approvalForEphemeral ?? true)
+    $('#defaultEffect').dataset.loaded = '1'
+  }
+
+  // 审计
+  const a = await api(`/api/admin/bunkers/${state.pubkey}/audit?limit=30`).catch(() => ({ entries: [] }))
+  $('auditBody').innerHTML = (a.entries ?? []).length
+    ? a.entries.map(e => `<tr>
+        <td class="mono-dim">${fmtTime(e.ts)}</td>
+        <td>${e.method || '—'}</td>
+        <td><span class="pill ${e.decision === 'allow' || e.decision === 'approved' ? 'ok' : e.decision === 'pending' ? 'amber' : 'down'}">${e.decision}</span></td>
+        <td class="mono-dim ellipsis" title="${e.detail}">${e.detail}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="4" class="empty">暂无记录</td></tr>'
+}
+
+window.decide = async (rpcId, allow) => {
+  try {
+    const r = await api(`/api/admin/bunkers/${state.pubkey}/decide`, {
+      method: 'POST',
+      body: JSON.stringify({ rpcId, allow }),
+    })
+    toast(allow ? '已批准并签名' : '已拒绝 · ' + (r.status ?? ''), allow)
+  } catch (e) { toast('失败: ' + e.message, false) }
+  refresh()
+}
+
+window.revoke = async (client) => {
+  try { await api(`/api/admin/bunkers/${state.pubkey}/revoke`, { method: 'POST', body: JSON.stringify({ client }) }); toast('会话已吊销') }
+  catch (e) { toast('失败: ' + e.message, false) }
+  refresh()
+}
+
+/* ---- 创建 ---- */
+$('createBtn').addEventListener('click', async () => {
+  const hex = $('importHex').value.trim()
+  const cs = $('connectSecret').value.trim()
+  try {
+    const r = await api('/api/admin/bunkers', {
+      method: 'POST',
+      body: JSON.stringify({ secretHex: hex || undefined, generate: !hex, connectSecret: cs || undefined }),
+    })
+    localStorage.setItem('signpost_cs', cs)
+    state.pubkey = r.pubkey
+    $('createdBox').classList.remove('hidden')
+    $('createdBox').innerHTML = `
+      <div class="note">BUNKER URI（请立即保存，连接客户端用）：</div>
+      <div class="big" style="margin-top:6px">${r.bunkerUri}</div>
+      <div class="note" style="margin-top:12px">DEVICE TOKEN（审批 App 配对用，仅此一次显示）：</div>
+      <div class="big">${r.deviceToken}</div>`
+    $('pairToken').value = r.deviceToken
+    $('pairApi').value = location.origin
+    $('pairPubkey').value = r.pubkey
+    $('identityData').classList.remove('hidden')
+    toast('Bunker 已部署')
+    refresh()
+  } catch (e) { toast('创建失败: ' + e.message, false) }
+})
+
+/* ---- 策略保存 ---- */
+$('savePolicy').addEventListener('click', async () => {
+  const settings = {
+    defaultEffect: $('defaultEffect').value,
+    autoAllowKinds: $('autoKinds').value.split(',').map(s => Number(s.trim())).filter(n => !Number.isNaN(n)),
+    approvalForEphemeral: $('ephemeral').value === 'true',
+  }
+  try {
+    await api(`/api/admin/bunkers/${state.pubkey}/settings`, { method: 'POST', body: JSON.stringify({ settings }) })
+    $('#defaultEffect').dataset.loaded = ''
+    toast('策略已保存')
+    refresh()
+  } catch (e) { toast('失败: ' + e.message, false) }
+})
+
+/* ---- token 轮换 ---- */
+$('rotateBtn').addEventListener('click', async () => {
+  try {
+    const r = await api(`/api/admin/bunkers/${state.pubkey}/rotate-device-token`, { method: 'POST' })
+    $('pairToken').value = r.deviceToken
+    toast('已轮换，旧 token 立即失效')
+  } catch (e) { toast('失败: ' + e.message, false) }
+})
+
+/* ---- 接入 ---- */
+$('saveToken').addEventListener('click', () => {
+  state.token = $('adminToken').value.trim()
+  localStorage.setItem('signpost_admin', state.token)
+  // 已知 pubkey 也可以从 localStorage 恢复，简化：优先用最近创建的
+  const saved = localStorage.getItem('signpost_pubkey')
+  if (saved) { state.pubkey = saved; $('identityData').classList.remove('hidden'); $('pairPubkey').value = saved; $('pairApi').value = location.origin }
+  else {
+    // 尝试从 URL ?pubkey= 恢复
+    const q = new URLSearchParams(location.search).get('pubkey')
+    if (q) { state.pubkey = q; localStorage.setItem('signpost_pubkey', q); $('identityData').classList.remove('hidden'); $('pairPubkey').value = q; $('pairApi').value = location.origin }
+  }
+  refresh()
+})
+
+// store pubkey after create
+const _origRefresh = refresh
+refresh = async function () { await _origRefresh(); if (state.pubkey) localStorage.setItem('signpost_pubkey', state.pubkey) }
+
+$('refreshBtn').addEventListener('click', refresh)
+document.querySelectorAll('[data-copy]').forEach(btn =>
+  btn.addEventListener('click', () => {
+    navigator.clipboard.writeText($(btn.dataset.copy).value)
+    toast('已复制')
+  }))
+
+// 自动刷新 + 初始化
+if (state.token) { $('adminToken').value = state.token; $('saveToken').click() }
+setInterval(() => state.pubkey && refresh(), 4000)
+</script>
+</body>
+</html>

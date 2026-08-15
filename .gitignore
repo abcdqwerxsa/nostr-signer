@@ -1,0 +1,11 @@
+node_modules/
+.wrangler/
+.dev.vars
+*.log
+.dart_tool/
+.flutter-plugins*
+build/
+.dart_tool
+*.iml
+.idea/
+.venv/
