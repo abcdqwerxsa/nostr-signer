@@ -57,6 +57,9 @@ jobs:
       - name: Analyze
         run: flutter analyze --fatal-infos
 
+      - name: Test
+        run: flutter test
+
       - name: Build APK（编译验证）
         run: flutter build apk --release
 
