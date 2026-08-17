@@ -57,7 +57,8 @@ BunkerApi? parsePairing(String raw) {
   }
   final pubkey = parts[1];
   final token = parts[2];
-  final okBase = Uri.tryParse(apiBase)?.hasAbsolutePath ?? false;
+  final uri = Uri.tryParse(apiBase);
+  final okBase = uri != null && uri.hasScheme && uri.host.isNotEmpty;
   final okPubkey = RegExp(r'^[0-9a-f]{64}$').hasMatch(pubkey);
   if (!okBase || !okPubkey || token.length < 16) return null;
   return BunkerApi(apiBase: apiBase, pubkey: pubkey, deviceToken: token);
