@@ -654,14 +654,7 @@ export class BunkerDO extends DurableObject<Env> {
       this.setMeta('last_active_at', String(now))
     }
 
-    const IDLE_TIMEOUT_MS = 5 * 60 * 1000 // 5 分钟无活动自动休眠
-
-    // 若超过 5 分钟没有任何活动，关停心跳 Alarm，允许 DO 优雅休眠，账单开销归零
-    if (now - lastActive > IDLE_TIMEOUT_MS) {
-      this.logDebug('Idle for > 5 min, stopping Alarm to conserve Cloudflare billing')
-      return
-    }
-
+    // 维持 30s 心跳 Alarm，确保与 Relay 的 WebSocket 连接 24/7 永不中断
     await this.connectAllRelays()
     // 活跃期间维持 30s 心跳
     await this.ctx.storage.setAlarm(now + ALARM_INTERVAL_MS)

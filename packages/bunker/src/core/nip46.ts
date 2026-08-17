@@ -151,6 +151,16 @@ registerMethod('ping', {
   },
 })
 
+registerMethod('get_relays', {
+  requiresSession: true,
+  async handle() {
+    return {
+      'wss://nostr.agh.ccwu.cc': { read: true, write: true },
+      'wss://nos.lol': { read: true, write: true },
+    }
+  },
+})
+
 registerMethod('sign_event', {
   requiresSession: true,
   async handle(ctx, ) {
