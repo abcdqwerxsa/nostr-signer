@@ -402,22 +402,31 @@ export class BunkerDO extends DurableObject<Env> {
     params: string[],
     reply: (res: Nip46Response) => void,
   ): Promise<void> {
-    const declaredClient = params[0]
-    if (declaredClient && declaredClient !== client) {
-      return reply(errorResponse(reqId, 'client pubkey mismatch'))
-    }
     const expectedSecret = this.getMeta('connect_secret')
-    if (expectedSecret && params[1] !== expectedSecret) {
+    let secretParam: string | undefined
+    let perms = ''
+
+    // 兼容 NIP-46 各种客户端对 params 的组织方式：
+    // [target_pubkey/client_pubkey, secret, perms] 或 [secret, perms]
+    if (params.length >= 2 && (params[0] === this.pubkey || params[0] === client || params[0].length === 64)) {
+      secretParam = params[1]
+      perms = params[2] ?? ''
+    } else if (params.length >= 1) {
+      secretParam = params[0]
+      perms = params[1] ?? ''
+    }
+
+    if (expectedSecret && secretParam !== expectedSecret) {
       await this.audit(client, 'connect', 'deny', 'connect secret 不匹配')
       return reply(errorResponse(reqId, 'invalid connect secret'))
     }
-    const perms = params[2] ?? ''
+
     this.ctx.storage.sql.exec(
       `INSERT INTO sessions (client, perms, created_at, last_seen_at) VALUES (?, ?, ?, ?)
        ON CONFLICT(client) DO UPDATE SET perms = excluded.perms, last_seen_at = excluded.last_seen_at`,
       client, perms, Date.now(), Date.now(),
     )
-    await this.audit(client, 'connect', 'allow', perms ? `perms: ${perms}` : '无 perms 声明')
+    await this.audit(client, 'connect', 'allow', perms ? `perms: ${perms}` : '连接成功')
     reply(okResponse(reqId, 'ack'))
   }
 
