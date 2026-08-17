@@ -158,12 +158,22 @@ router.add('GET', '/api/v1/:pubkey/status', async (req, p, _u, env) => {
 
 export default {
   async fetch(req: Request, env: Env): Promise<Response> {
+    if (req.method === 'OPTIONS') {
+      return new Response(null, {
+        status: 204,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': 'Authorization, Content-Type',
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        },
+      })
+    }
+
     const match = router.dispatch(req)
     if (!match) return new Response('not found', { status: 404 })
 
     const isAdminRoute = new URL(req.url).pathname.startsWith('/api/admin')
     if (isAdminRoute) {
-      if (req.method === 'OPTIONS') return new Response(null, { status: 204 })
       if (!isAdmin(req, env)) return json({ error: 'invalid admin token' }, 401)
     }
 
