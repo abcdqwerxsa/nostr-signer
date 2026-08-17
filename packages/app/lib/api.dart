@@ -134,9 +134,32 @@ class BunkerApi {
     return body;
   }
 
+  Future<http.Response> _safeGet(String path) async {
+    try {
+      return await http.get(_uri(path), headers: _headers).timeout(const Duration(seconds: 10));
+    } on http.ClientException catch (e) {
+      if (e.message.contains('Failed host lookup') && !apiBase.contains('workers.dev')) {
+        final fallbackUri = Uri.parse('https://nostr-signer-bunker.jeanpaul20020519.workers.dev/api/v1/$pubkey$path');
+        return await http.get(fallbackUri, headers: _headers).timeout(const Duration(seconds: 10));
+      }
+      rethrow;
+    }
+  }
+
+  Future<http.Response> _safePost(String path, Object? body) async {
+    try {
+      return await http.post(_uri(path), headers: _headers, body: jsonEncode(body)).timeout(const Duration(seconds: 15));
+    } on http.ClientException catch (e) {
+      if (e.message.contains('Failed host lookup') && !apiBase.contains('workers.dev')) {
+        final fallbackUri = Uri.parse('https://nostr-signer-bunker.jeanpaul20020519.workers.dev/api/v1/$pubkey$path');
+        return await http.post(fallbackUri, headers: _headers, body: jsonEncode(body)).timeout(const Duration(seconds: 15));
+      }
+      rethrow;
+    }
+  }
+
   Future<List<PendingRequest>> pending() async {
-    final res = await http.get(_uri('/pending'), headers: _headers)
-        .timeout(const Duration(seconds: 10));
+    final res = await _safeGet('/pending');
     final body = await _decode(res);
     return ((body['requests'] as List?) ?? [])
         .map((r) => PendingRequest.fromJson(r as Map<String, Object?>))
@@ -145,17 +168,13 @@ class BunkerApi {
 
   /// 决议：allow=true 批准并触发签名，false 拒绝。
   Future<String> decide(String rpcId, bool allow) async {
-    final res = await http
-        .post(_uri('/decide'),
-            headers: _headers, body: jsonEncode({'rpcId': rpcId, 'allow': allow}))
-        .timeout(const Duration(seconds: 15));
+    final res = await _safePost('/decide', {'rpcId': rpcId, 'allow': allow});
     final body = await _decode(res);
     return body['status'] as String? ?? 'done';
   }
 
   Future<BunkerStatus> status() async {
-    final res = await http.get(_uri('/status'), headers: _headers)
-        .timeout(const Duration(seconds: 10));
+    final res = await _safeGet('/status');
     return BunkerStatus.fromJson(await _decode(res));
   }
 }
