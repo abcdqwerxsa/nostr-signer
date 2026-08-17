@@ -55,37 +55,25 @@ export function decryptTransport(
   peerPubkey: string,
 ): { plain: string; scheme: TransportScheme } {
   const trimmed = content.trim()
-  // 1. 如果本身是合法的 JSON 明文（如旧版客户端未加密的 connect）
-  if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
-    try {
-      JSON.parse(trimmed)
-      return { plain: trimmed, scheme: 'nip04' }
-    } catch {
-      // 并非合法 JSON，继续尝试解密
-    }
-  }
-
-  // 2. 如果明确包含 NIP-04 标记 ?iv=
+  // 1. 如果包含 NIP-04 经典 IV 标记
   if (trimmed.includes('?iv=')) {
     try {
       const plain = nip04.decrypt(bunkerSecret, peerPubkey, trimmed)
       return { plain, scheme: 'nip04' }
     } catch {
-      // fallback 尝试 nip44
-      const key = nip44.getConversationKey(bunkerSecret, peerPubkey)
-      const plain = nip44.decrypt(trimmed, key)
-      return { plain, scheme: 'nip44' }
+      // fallback
     }
   }
 
-  // 3. 优先尝试 NIP-44，解密失败则降级回 NIP-04
-  const key = nip44.getConversationKey(bunkerSecret, peerPubkey)
+  // 2. 优先尝试 NIP-04（Coracle 等标准客户端默认方案）
   try {
-    const plain = nip44.decrypt(trimmed, key)
-    return { plain, scheme: 'nip44' }
-  } catch {
     const plain = nip04.decrypt(bunkerSecret, peerPubkey, trimmed)
     return { plain, scheme: 'nip04' }
+  } catch {
+    // 3. 降级尝试 NIP-44
+    const key = nip44.getConversationKey(bunkerSecret, peerPubkey)
+    const plain = nip44.decrypt(trimmed, key)
+    return { plain, scheme: 'nip44' }
   }
 }
 

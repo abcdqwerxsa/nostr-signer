@@ -42,9 +42,9 @@ export interface PolicySettings {
 }
 
 export const DEFAULT_POLICY_SETTINGS: PolicySettings = {
-  defaultEffect: 'allow',
-  autoAllowKinds: [0, 1, 3, 7, 10002, 22242],
-  approvalForEphemeral: false,
+  defaultEffect: 'require_approval',
+  autoAllowKinds: [0, 3, 10002, 22242],
+  approvalForEphemeral: true,
 }
 
 /** 会话在 connect 时声明的 perms：`sign_event:0-3, nip44_encrypt` 这样的字符串。 */

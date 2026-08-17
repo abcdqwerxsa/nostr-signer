@@ -324,8 +324,8 @@ export class BunkerDO extends DurableObject<Env> {
 
   private cursor(): number {
     const raw = this.getMeta('req_cursor')
-    // 默认回溯过去 1 小时 (3600s)，避免大历史区间导致某些 Relay (如 strfry) 放弃实时事件推送
-    return raw ? Math.max(0, Number(raw) - 120) : Math.floor(Date.now() / 1000) - 3600
+    // 默认回溯过去 60 秒 (60s)，避免大历史区间导致某些 Relay 拒绝或断开连接
+    return raw ? Math.max(0, Number(raw) - 60) : Math.floor(Date.now() / 1000) - 60
   }
 
   private onRelayMessage(url: string, data: string): void {
@@ -477,7 +477,7 @@ export class BunkerDO extends DurableObject<Env> {
       return reply(errorResponse(reqId, 'invalid connect secret'))
     }
 
-    const finalPerms = perms || 'sign_event,nip04_encrypt,nip04_decrypt,nip44_encrypt,nip44_decrypt'
+    const finalPerms = perms
     this.ctx.storage.sql.exec(
       `INSERT INTO sessions (client, perms, created_at, last_seen_at) VALUES (?, ?, ?, ?)
        ON CONFLICT(client) DO UPDATE SET perms = excluded.perms, last_seen_at = excluded.last_seen_at`,
