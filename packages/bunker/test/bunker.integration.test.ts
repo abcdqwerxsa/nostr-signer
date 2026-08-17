@@ -88,7 +88,7 @@ describe('NIP-46 全链路', () => {
       bunkerUri: string
       deviceToken: string
     }
-    expect(bunker.bunkerUri).toMatch(/^bunker:\/\/npub1/)
+    expect(bunker.bunkerUri).toMatch(/^bunker:\/\//)
 
     const client: Client = { secret: generateSecretKey(), pubkey: '' }
     client.pubkey = getPublicKey(client.secret)

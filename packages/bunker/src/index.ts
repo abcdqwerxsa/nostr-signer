@@ -89,18 +89,30 @@ router.add('POST', '/api/admin/bunkers', async (req, _p, _u, env) => {
     queryParts.push(`secret=${connectSecret}`)
   }
   const queryString = `?${queryParts.join('&')}`
-  const uriNpub = `bunker://${encodeNpub(pubkey)}${queryString}`
   const uriHex = `bunker://${pubkey}${queryString}`
+  const uriNpub = `bunker://${encodeNpub(pubkey)}${queryString}`
 
   return json({
     pubkey,
-    npub: encodeNpub(pubkey),
-    bunkerUri: uriNpub,
-    bunkerUriNpub: uriNpub,
+    bunkerUri: uriHex,
     bunkerUriHex: uriHex,
+    bunkerUriNpub: uriNpub,
     deviceToken: data.deviceToken,
     relays,
   })
+})
+
+// ---- NIP-05 NIP-46 名字解析 ----------------------------------------------
+router.add('GET', '/.well-known/nostr.json', async (_req, _p, u) => {
+  const name = u.searchParams.get('name')?.trim()
+  if (!name) return cors(json({ names: {}, relays: {} }))
+  // 如果 name 本身就是 64-hex 字符串或包含 pubkey
+  const pubkey = /^[0-9a-fA-F]{64}$/.test(name) ? name.toLowerCase() : name
+  return cors(json({
+    names: { [name]: pubkey },
+    relays: { [pubkey]: ['wss://nostr.agh.ccwu.cc', 'wss://nos.lol'] },
+    nip46: { [pubkey]: ['wss://nostr.agh.ccwu.cc', 'wss://nos.lol'] },
+  }))
 })
 
 router.add('GET', '/api/admin/bunkers/:pubkey', async (req, p, _u, env) => {
