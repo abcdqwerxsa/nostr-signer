@@ -295,7 +295,7 @@
  * 控制台逻辑：极简 fetch 封装 + 渲染函数。
  * 无框架、无构建步骤 —— 单文件即完整功能。
  * ==================================================================== */
-const $ = (id) => document.getElementById(id)
+const $ = (id) => document.getElementById(id.startsWith('#') ? id.slice(1) : id)
 const state = { token: localStorage.getItem('signpost_admin') ?? '', pubkey: null, timer: null }
 
 function updatePairingString() {
@@ -378,11 +378,11 @@ async function refresh() {
     : '<div class="empty">无待审批请求</div>'
 
   // 策略
-  if (!$('#defaultEffect').dataset.loaded) {
+  if (!$('defaultEffect').dataset.loaded) {
     $('defaultEffect').value = s.settings?.defaultEffect ?? 'require_approval'
     $('autoKinds').value = (s.settings?.autoAllowKinds ?? []).join(', ')
     $('ephemeral').value = String(s.settings?.approvalForEphemeral ?? true)
-    $('#defaultEffect').dataset.loaded = '1'
+    $('defaultEffect').dataset.loaded = '1'
   }
 
   // 审计
@@ -454,7 +454,7 @@ $('savePolicy').addEventListener('click', async () => {
   }
   try {
     await api(`/api/admin/bunkers/${state.pubkey}/settings`, { method: 'POST', body: JSON.stringify({ settings }) })
-    $('#defaultEffect').dataset.loaded = ''
+    $('defaultEffect').dataset.loaded = ''
     toast('策略已保存')
     refresh()
   } catch (e) { toast('失败: ' + e.message, false) }
