@@ -106,6 +106,12 @@ router.add('GET', '/api/admin/bunkers/:pubkey', async (req, p, _u, env) => {
   return json(data, res.status)
 })
 
+router.add('GET', '/api/admin/bunkers/:pubkey/debug', async (req, p, _u, env) => {
+  const res = await doFetch(env, p.pubkey!, '/internal/debug')
+  const data = await res.json()
+  return json(data, res.status)
+})
+
 router.add('POST', '/api/admin/bunkers/:pubkey/settings', async (req, p, _u, env) => {
   const body = await req.json()
   const res = await doFetch(env, p.pubkey!, '/settings', { method: 'POST', body: JSON.stringify(body) })

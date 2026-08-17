@@ -67,6 +67,15 @@ export class BunkerDO extends DurableObject<Env> {
   private secret: Uint8Array | null = null
   private pubkey = ''
   private relays = new Map<string, WebSocket>()
+  private debugLogs: string[] = []
+
+  private logDebug(msg: string) {
+    const line = `[${new Date().toISOString()}] ${msg}`
+    this.debugLogs.push(line)
+    if (this.debugLogs.length > 100) this.debugLogs.shift()
+    console.log(line)
+  }
+
   /** 调试/测试用：最近发布出去的 NIP-46 应答（内存，最多 20 条） */
   private recentReplies: Nip46Response[] = []
 
@@ -131,6 +140,18 @@ export class BunkerDO extends DurableObject<Env> {
         return Response.json({ deviceToken: token })
       }
       // ---- 内部端点：测试与调试（DO 不对外暴露，仅同 Worker 内可达） ----
+      if (path === '/internal/debug' && req.method === 'GET') {
+        const wsStatus: Record<string, string> = {}
+        for (const [u, ws] of this.relays.entries()) {
+          wsStatus[u] = ws.readyState === 1 ? 'OPEN' : ws.readyState === 0 ? 'CONNECTING' : ws.readyState === 2 ? 'CLOSING' : 'CLOSED'
+        }
+        return Response.json({
+          pubkey: this.pubkey,
+          secretInitialized: !!this.secret,
+          relays: wsStatus,
+          logs: this.debugLogs,
+        })
+      }
       if (path === '/internal/relay-event' && req.method === 'POST') {
         const body = await json()
         await this.onClientEvent(body.event as unknown as Event)
