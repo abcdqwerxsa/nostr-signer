@@ -429,8 +429,10 @@ $('createBtn').addEventListener('click', async () => {
     state.pubkey = r.pubkey
     $('createdBox').classList.remove('hidden')
     $('createdBox').innerHTML = `
-      <div class="note">BUNKER URI（请立即保存，连接客户端用）：</div>
-      <div class="big" style="margin-top:6px">${r.bunkerUri}</div>
+      <div class="note">BUNKER URI (HEX 格式，适用 Coracle / Amethyst)：</div>
+      <div class="big" style="margin-top:6px; word-break:break-all; user-select:all">${r.bunkerUri}</div>
+      <div class="note" style="margin-top:10px">BUNKER URI (npub1 格式)：</div>
+      <div class="big" style="margin-top:6px; word-break:break-all; user-select:all">${r.bunkerUriNpub || r.bunkerUri}</div>
       <div class="note" style="margin-top:12px">DEVICE TOKEN（审批 App 配对用，仅此一次显示）：</div>
       <div class="big">${r.deviceToken}</div>`
     $('pairToken').value = r.deviceToken

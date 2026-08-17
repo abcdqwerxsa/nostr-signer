@@ -82,9 +82,9 @@ router.add('POST', '/api/admin/bunkers', async (req, _p, _u, env) => {
   const data = (await res.json()) as Record<string, unknown>
   if (!res.ok) return json(data, res.status as 400 | 409)
   const relays = (data.relays as string[]) ?? []
-  const queryParts = relays.map((r) => `relay=${encodeURIComponent(r)}`)
+  const queryParts = relays.map((r) => `relay=${r}`)
   if (body.connectSecret) {
-    queryParts.push(`secret=${encodeURIComponent(body.connectSecret)}`)
+    queryParts.push(`secret=${body.connectSecret}`)
   }
   const queryString = queryParts.length > 0 ? `?${queryParts.join('&')}` : ''
   const uri = `bunker://${pubkey}${queryString}`
