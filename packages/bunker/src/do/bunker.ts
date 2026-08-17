@@ -271,11 +271,13 @@ export class BunkerDO extends DurableObject<Env> {
     this.relays.set(url, ws)
 
     const sendSubscription = () => {
+      const subId = `bkr-${this.pubkey.slice(0, 8)}`
       const reqMsg = [
         'REQ',
-        `bkr-${this.pubkey.slice(0, 8)}`,
+        subId,
         { kinds: [REQ_KIND], '#p': [this.pubkey], since: this.cursor() },
       ]
+      this.logDebug(`Subscribing to ${url} with subId ${subId}`)
       this.sendToRelay(ws, reqMsg)
     }
 
@@ -287,6 +289,7 @@ export class BunkerDO extends DurableObject<Env> {
 
     ws.addEventListener('message', (ev: MessageEvent) => this.onRelayMessage(url, ev.data as string))
     const onDown = () => {
+      this.logDebug(`Relay connection closed: ${url}`)
       this.relays.delete(url)
       this.scheduleFastReconnect()
     }
@@ -309,7 +312,7 @@ export class BunkerDO extends DurableObject<Env> {
         ws.send(JSON.stringify(msg))
       }
     } catch (e) {
-      console.warn(`[bunker ${this.pubkey}] sendToRelay failed:`, e)
+      this.logDebug(`sendToRelay error: ${e}`)
     }
   }
 
@@ -320,6 +323,7 @@ export class BunkerDO extends DurableObject<Env> {
   }
 
   private onRelayMessage(url: string, data: string): void {
+    this.logDebug(`Relay [${url}] msg: ${data.slice(0, 160)}`)
     let msg: unknown[]
     try {
       msg = JSON.parse(data)
@@ -329,7 +333,7 @@ export class BunkerDO extends DurableObject<Env> {
     const [type, , payload] = msg
     if (type === 'EVENT' && payload && typeof payload === 'object') {
       void this.onClientEvent(payload as unknown as Event).catch((err) =>
-        console.error(`[bunker ${this.pubkey}] handle event failed:`, err),
+        this.logDebug(`handle event failed: ${err}`),
       )
     }
   }

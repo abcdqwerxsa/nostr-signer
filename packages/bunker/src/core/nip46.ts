@@ -190,7 +190,14 @@ registerMethod('nip44_decrypt', {
 registerMethod('get_relays', {
   requiresSession: true,
   async handle() {
-    return JSON.stringify({})
+    const relays: Record<string, { read: boolean; write: boolean }> = {
+      'wss://relay.damus.io': { read: true, write: true },
+      'wss://nos.lol': { read: true, write: true },
+      'wss://purplepag.es': { read: true, write: true },
+      'wss://relay.nostr.band': { read: true, write: true },
+      'wss://relay.primal.net': { read: true, write: true },
+    }
+    return JSON.stringify(relays)
   },
 })
 

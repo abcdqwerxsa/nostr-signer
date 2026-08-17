@@ -43,7 +43,7 @@ export interface PolicySettings {
 
 export const DEFAULT_POLICY_SETTINGS: PolicySettings = {
   defaultEffect: 'require_approval',
-  autoAllowKinds: [0, 3, 10002],
+  autoAllowKinds: [0, 3, 10002, 22242],
   approvalForEphemeral: true,
 }
 
