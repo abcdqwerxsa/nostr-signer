@@ -60,8 +60,9 @@
   /* ---- 通用 ---- */
   button {
     background: transparent; border: 1px solid var(--line-2); color: var(--text);
-    font-family: var(--mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase;
-    padding: 8px 16px; cursor: pointer; transition: none;
+    font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
+    padding: 0 16px; height: 34px; line-height: 32px; white-space: nowrap; cursor: pointer; transition: none;
+    display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;
   }
   button:hover { border-color: var(--amber); color: var(--amber); }
   button:active { background: var(--amber); color: var(--ink); }
@@ -72,7 +73,7 @@
   input, textarea, select {
     background: var(--ink-2); border: 1px solid var(--line-2); color: var(--text);
     font-family: var(--mono); font-size: 12px; padding: 8px 10px; width: 100%;
-    height: 34px; line-height: 1.4; border-radius: 0; appearance: none; -webkit-appearance: none;
+    height: 34px; line-height: 1.4; border-radius: 0; appearance: none; -webkit-appearance: none; box-sizing: border-box;
   }
   input:focus, textarea:focus, select:focus { outline: 1px solid var(--amber); border-color: var(--amber); }
   input:read-only, input[readonly] {
@@ -185,9 +186,12 @@
     </div>
     <div id="createForm" style="margin-top:18px;border-top:1px solid var(--line);padding-top:18px">
       <div class="row">
-        <div><label>导入私钥（64 位 hex，留空则生成新密钥）</label><input id="importHex" type="text" placeholder="d0e1…（hex）" autocomplete="off" spellcheck="false" /></div>
-        <div><label>CONNECT SECRET（可选，客户端连接口令）</label><input id="connectSecret" type="text" placeholder="留空表示不启用" autocomplete="off" spellcheck="false" /></div>
-        <div style="flex:0;min-width:auto;display:flex;align-items:flex-end"><button class="primary" id="createBtn" style="height:34px">部署 Bunker</button></div>
+        <div style="flex:2;min-width:240px"><label>导入私钥（64 位 hex，留空则生成新密钥）</label><input id="importHex" type="text" placeholder="d0e1…（hex）" autocomplete="off" spellcheck="false" /></div>
+        <div style="flex:2;min-width:220px"><label>CONNECT SECRET（可选，客户端连接口令）</label><input id="connectSecret" type="text" placeholder="留空表示不启用" autocomplete="off" spellcheck="false" /></div>
+        <div style="flex:0 0 auto;display:flex;flex-direction:column;justify-content:flex-end">
+          <label style="visibility:hidden">ACTION</label>
+          <button class="primary" id="createBtn" style="padding:0 22px;height:34px;margin-top:6px;white-space:nowrap">部署 Bunker</button>
+        </div>
       </div>
       <div id="createdBox" class="created hidden"></div>
     </div>
