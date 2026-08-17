@@ -37,7 +37,7 @@ def decrypt_nip04(sk_hex, pk_hex, encrypted):
     data = unpadder.update(padded_data) + unpadder.finalize()
     return data.decode('utf-8')
 
-bunker_uri = "bunker://77141f82272a10de69eeda3a243bfda281f68c283c4e65ec16c2689d2f80702c?relay=wss://nos.lol&relay=wss://relay.primal.net"
+bunker_uri = "bunker://c0f572adcc23d6978e3710dcfb858b4048dc445821ba97c412e453464e0b7b77?relay=wss://nos.lol&relay=wss://relay.primal.net&secret=c94d9504"
 parsed = urlparse(bunker_uri)
 target_bunker_pubkey = parsed.netloc or parsed.path.strip('/')
 
@@ -95,7 +95,7 @@ def send_rpc(method, params=[]):
 
 try:
     print("\n--- Step 1: connect ---")
-    send_rpc("connect", [target_bunker_pubkey])
+    send_rpc("connect", [target_bunker_pubkey, "c94d9504"])
 
     print("\n--- Step 2: get_public_key ---")
     send_rpc("get_public_key", [])
