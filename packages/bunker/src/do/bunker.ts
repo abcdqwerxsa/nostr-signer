@@ -457,16 +457,22 @@ export class BunkerDO extends DurableObject<Env> {
     let perms = ''
 
     // 兼容 NIP-46 各种客户端对 params 的组织方式：
-    // [target_pubkey/client_pubkey, secret, perms] 或 [secret, perms]
-    if (params.length >= 2 && (params[0] === this.pubkey || params[0] === client || params[0].length === 64)) {
+    // [target_pubkey/client_pubkey, secret, perms] 或 [secret, perms] 或 [target_pubkey]
+    if (params.length >= 2 && (params[0] === this.pubkey || params[0] === client || /^[0-9a-fA-F]{64}$/.test(params[0]))) {
       secretParam = params[1]
       perms = params[2] ?? ''
-    } else if (params.length >= 1) {
+    } else if (params.length === 1) {
+      if (/^[0-9a-fA-F]{64}$/.test(params[0]) || params[0] === this.pubkey || params[0] === client) {
+        secretParam = undefined
+      } else {
+        secretParam = params[0]
+      }
+    } else if (params.length >= 2) {
       secretParam = params[0]
       perms = params[1] ?? ''
     }
 
-    if (expectedSecret && secretParam !== expectedSecret) {
+    if (expectedSecret && secretParam && secretParam !== expectedSecret) {
       await this.audit(client, 'connect', 'deny', 'connect secret 不匹配')
       return reply(errorResponse(reqId, 'invalid connect secret'))
     }
