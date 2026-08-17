@@ -3,7 +3,11 @@ name: CI
 on:
   push:
     branches: [main]
+    tags: ['v*']
   pull_request:
+
+permissions:
+  contents: write
 
 jobs:
   backend:
@@ -68,3 +72,23 @@ jobs:
           name: signpost-apk
           path: packages/app/build/app/outputs/flutter-apk/app-release.apk
           retention-days: 14
+
+      - name: Publish to GitHub Release
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'latest' }}
+          name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'SIGNPOST Mobile App (Latest Build)' }}
+          body: |
+            ## SIGNPOST 移动审批终端 (Android APK)
+
+            自托管 NIP-46 Remote Signer (Bunker) 的配套移动审批 App。
+
+            ### 安装与使用说明
+            1. 下载下方附件中的 `app-release.apk` 安装到 Android 手机。
+            2. 打开网页控制台 [SIGNPOST 控制台](https://nostr-signer-bunker.jeanpaul20020519.workers.dev)。
+            3. 点击 **【复制配对串】** 粘贴至 App 中即可一键完成接入。
+          files: packages/app/build/app/outputs/flutter-apk/app-release.apk
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
