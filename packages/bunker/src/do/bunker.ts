@@ -50,7 +50,7 @@ interface Env {
 
 const REQ_KIND = 24133
 const APPROVAL_TTL_MS = 120_000
-const ALARM_INTERVAL_MS = 30_000
+const ALARM_INTERVAL_MS = 10_000
 
 interface PendingRequest {
   rpcId: string
@@ -277,7 +277,7 @@ export class BunkerDO extends DurableObject<Env> {
         subId,
         { kinds: [REQ_KIND], '#p': [this.pubkey], since: this.cursor() },
       ]
-      this.logDebug(`Subscribing to ${url} with subId ${subId}`)
+      this.logDebug(`Subscribing to ${url} with subId ${subId} (hex: ${this.pubkey.slice(0, 8)}...)`)
       this.sendToRelay(ws, reqMsg)
     }
 
@@ -318,8 +318,8 @@ export class BunkerDO extends DurableObject<Env> {
 
   private cursor(): number {
     const raw = this.getMeta('req_cursor')
-    // 允许回溯过去 30 天的事件，防止错失 connect 或由于网络时钟偏差遗漏
-    return raw ? Math.max(0, Number(raw) - 300) : Math.floor(Date.now() / 1000) - 86400 * 30
+    // 默认回溯过去 1 小时 (3600s)，避免大历史区间导致某些 Relay (如 strfry) 放弃实时事件推送
+    return raw ? Math.max(0, Number(raw) - 120) : Math.floor(Date.now() / 1000) - 3600
   }
 
   private onRelayMessage(url: string, data: string): void {
@@ -611,6 +611,9 @@ export class BunkerDO extends DurableObject<Env> {
     await this.ensureInitialized()
     if (!this.secret) return
     await this.connectAllRelays()
+    // 持续续期 10s 心跳 Alarm，防止 Cloudflare DO 被回收冻结 WebSocket 连接
+    await this.ctx.storage.setAlarm(Date.now() + ALARM_INTERVAL_MS)
+
     // 过期请求回一个 error，避免客户端干等
     const now = Date.now()
     for (const row of this.ctx.storage.sql.exec(

@@ -1,8 +1,8 @@
 import { finalizeEvent, generateSecretKey, getPublicKey } from 'nostr-tools/pure'
 import { nip04 } from 'nostr-tools'
 
-const targetBunkerPubkey = '18b4eebcbfcd0817ab1e43191c55781b58f29051b9acb197bdc32bb536824f5c'
-const relayUrl = 'wss://relay.damus.io'
+const targetBunkerPubkey = '46cf03dfc20e8b86dd8d49e738f7596114568edcf720ad4bd7fd1e2c7d8437b4'
+const relayUrl = 'wss://nos.lol'
 
 const clientSk = generateSecretKey()
 const clientPk = getPublicKey(clientSk)
@@ -42,7 +42,7 @@ ws.onopen = async () => {
 }
 
 ws.onmessage = (data) => {
-  console.log('Relay Message:', data.data)
+  console.log('>>> Relay Message Raw:', data.data)
   if (data.data.includes('EVENT')) {
     console.log('🎉🎉 SUCCESS! Received response event from Bunker!')
     process.exit(0)
