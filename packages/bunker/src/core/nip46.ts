@@ -54,12 +54,39 @@ export function decryptTransport(
   bunkerSecret: Uint8Array,
   peerPubkey: string,
 ): { plain: string; scheme: TransportScheme } {
-  const scheme = detectScheme(content)
-  const plain =
-    scheme === 'nip04'
-      ? nip04.decrypt(bunkerSecret, peerPubkey, content)
-      : nip44.decrypt(content, nip44.getConversationKey(bunkerSecret, peerPubkey))
-  return { plain, scheme }
+  const trimmed = content.trim()
+  // 1. 如果本身是合法的 JSON 明文（如旧版客户端未加密的 connect）
+  if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+    try {
+      JSON.parse(trimmed)
+      return { plain: trimmed, scheme: 'nip04' }
+    } catch {
+      // 并非合法 JSON，继续尝试解密
+    }
+  }
+
+  // 2. 如果明确包含 NIP-04 标记 ?iv=
+  if (trimmed.includes('?iv=')) {
+    try {
+      const plain = nip04.decrypt(bunkerSecret, peerPubkey, trimmed)
+      return { plain, scheme: 'nip04' }
+    } catch {
+      // fallback 尝试 nip44
+      const key = nip44.getConversationKey(bunkerSecret, peerPubkey)
+      const plain = nip44.decrypt(trimmed, key)
+      return { plain, scheme: 'nip44' }
+    }
+  }
+
+  // 3. 优先尝试 NIP-44，解密失败则降级回 NIP-04
+  const key = nip44.getConversationKey(bunkerSecret, peerPubkey)
+  try {
+    const plain = nip44.decrypt(trimmed, key)
+    return { plain, scheme: 'nip44' }
+  } catch {
+    const plain = nip04.decrypt(bunkerSecret, peerPubkey, trimmed)
+    return { plain, scheme: 'nip04' }
+  }
 }
 
 export function encryptTransport(
