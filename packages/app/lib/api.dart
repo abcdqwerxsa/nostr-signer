@@ -105,11 +105,21 @@ class BunkerStatus {
 }
 
 class BunkerApi {
-  BunkerApi({required this.apiBase, required this.pubkey, required this.deviceToken});
+  BunkerApi({required String apiBase, required this.pubkey, required this.deviceToken})
+      : apiBase = _normalizeApiBase(apiBase);
 
   final String apiBase; // 例如 https://signpost.example.com
   final String pubkey; // bunker pubkey hex
   final String deviceToken;
+
+  static String _normalizeApiBase(String raw) {
+    var trimmed = raw.trim().replaceAll(RegExp(r'/+$'), '');
+    if (trimmed.isEmpty) return '';
+    if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+      trimmed = 'https://$trimmed';
+    }
+    return trimmed;
+  }
 
   Map<String, String> get _headers => {
         'Authorization': 'Bearer $deviceToken',

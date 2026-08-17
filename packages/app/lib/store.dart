@@ -51,7 +51,10 @@ BunkerApi? parsePairing(String raw) {
       .where((s) => s.isNotEmpty)
       .toList();
   if (parts.length != 3) return null;
-  final apiBase = parts[0].replaceAll(RegExp(r'/+$'), '');
+  var apiBase = parts[0].replaceAll(RegExp(r'/+$'), '');
+  if (!apiBase.startsWith('http://') && !apiBase.startsWith('https://')) {
+    apiBase = 'https://$apiBase';
+  }
   final pubkey = parts[1];
   final token = parts[2];
   final okBase = Uri.tryParse(apiBase)?.hasAbsolutePath ?? false;
