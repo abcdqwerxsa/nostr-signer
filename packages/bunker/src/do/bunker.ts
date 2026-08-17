@@ -477,12 +477,13 @@ export class BunkerDO extends DurableObject<Env> {
       return reply(errorResponse(reqId, 'invalid connect secret'))
     }
 
+    const finalPerms = perms || 'sign_event,nip04_encrypt,nip04_decrypt,nip44_encrypt,nip44_decrypt'
     this.ctx.storage.sql.exec(
       `INSERT INTO sessions (client, perms, created_at, last_seen_at) VALUES (?, ?, ?, ?)
        ON CONFLICT(client) DO UPDATE SET perms = excluded.perms, last_seen_at = excluded.last_seen_at`,
-      client, perms, Date.now(), Date.now(),
+      client, finalPerms, Date.now(), Date.now(),
     )
-    await this.audit(client, 'connect', 'allow', perms ? `perms: ${perms}` : '连接成功')
+    await this.audit(client, 'connect', 'allow', finalPerms ? `perms: ${finalPerms}` : '连接成功')
     reply(okResponse(reqId, 'ack'))
   }
 
