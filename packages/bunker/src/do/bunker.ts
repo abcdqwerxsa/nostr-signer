@@ -451,6 +451,7 @@ export class BunkerDO extends DurableObject<Env> {
     params: string[],
     reply: (res: Nip46Response) => void,
   ): Promise<void> {
+    this.setMeta('last_active_at', String(Date.now()))
     const expectedSecret = this.getMeta('connect_secret')
     let secretParam: string | undefined
     let perms = ''
@@ -618,7 +619,12 @@ export class BunkerDO extends DurableObject<Env> {
     if (!this.secret) return
 
     const now = Date.now()
-    const lastActive = Number(this.getMeta('last_active_at') || '0')
+    let lastActive = Number(this.getMeta('last_active_at') || '0')
+    if (lastActive === 0) {
+      lastActive = now
+      this.setMeta('last_active_at', String(now))
+    }
+
     const IDLE_TIMEOUT_MS = 5 * 60 * 1000 // 5 分钟无活动自动休眠
 
     // 若超过 5 分钟没有任何活动，关停心跳 Alarm，允许 DO 优雅休眠，账单开销归零
