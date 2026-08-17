@@ -37,7 +37,7 @@ def decrypt_nip04(sk_hex, pk_hex, encrypted):
     data = unpadder.update(padded_data) + unpadder.finalize()
     return data.decode('utf-8')
 
-bunker_uri = "bunker://c0f572adcc23d6978e3710dcfb858b4048dc445821ba97c412e453464e0b7b77?relay=wss://nos.lol&relay=wss://relay.primal.net&secret=c94d9504"
+bunker_uri = "bunker://87b51f8642c9a83b71c09a0110a4755f4ab8db3249301666b70f71022eacbc1d?relay=wss://nostr.agh.ccwu.cc"
 parsed = urlparse(bunker_uri)
 target_bunker_pubkey = parsed.netloc or parsed.path.strip('/')
 
@@ -48,7 +48,7 @@ print(f"Target Bunker Pubkey: {target_bunker_pubkey}")
 print(f"Client Pubkey: {client_pk}")
 
 ws = websocket.WebSocket(sslopt={"cert_reqs": ssl.CERT_NONE})
-ws.connect("wss://nos.lol", http_proxy_host="127.0.0.1", http_proxy_port=7897)
+ws.connect("wss://nostr.agh.ccwu.cc", http_proxy_host="127.0.0.1", http_proxy_port=7897)
 print("WebSocket connected successfully!")
 
 sub_id = "coracle-sub-1"
@@ -95,7 +95,7 @@ def send_rpc(method, params=[]):
 
 try:
     print("\n--- Step 1: connect ---")
-    send_rpc("connect", [target_bunker_pubkey, "c94d9504"])
+    send_rpc("connect", [target_bunker_pubkey])
 
     print("\n--- Step 2: get_public_key ---")
     send_rpc("get_public_key", [])
