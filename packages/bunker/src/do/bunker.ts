@@ -83,10 +83,16 @@ export class BunkerDO extends DurableObject<Env> {
     super(ctx, env)
   }
 
+  private touchActive() {
+    this.ctx.storage.sql.exec(`INSERT OR REPLACE INTO meta (key, value) VALUES ('last_active', ?)`, Date.now())
+  }
+
   // ======================= HTTP 表面（Worker 内部调用） =======================
 
   async fetch(req: Request): Promise<Response> {
     await this.ensureInitialized()
+    this.touchActive()
+
     const url = new URL(req.url)
     const path = url.pathname
     const json = async () => (await req.json().catch(() => ({}))) as Record<string, unknown>
@@ -610,12 +616,22 @@ export class BunkerDO extends DurableObject<Env> {
   async alarm(): Promise<void> {
     await this.ensureInitialized()
     if (!this.secret) return
+
+    const now = Date.now()
+    const lastActive = Number(this.getMeta('last_active_at') || '0')
+    const IDLE_TIMEOUT_MS = 5 * 60 * 1000 // 5 分钟无活动自动休眠
+
+    // 若超过 5 分钟没有任何活动，关停心跳 Alarm，允许 DO 优雅休眠，账单开销归零
+    if (now - lastActive > IDLE_TIMEOUT_MS) {
+      this.logDebug('Idle for > 5 min, stopping Alarm to conserve Cloudflare billing')
+      return
+    }
+
     await this.connectAllRelays()
-    // 持续续期 10s 心跳 Alarm，防止 Cloudflare DO 被回收冻结 WebSocket 连接
-    await this.ctx.storage.setAlarm(Date.now() + ALARM_INTERVAL_MS)
+    // 活跃期间维持 30s 心跳
+    await this.ctx.storage.setAlarm(now + ALARM_INTERVAL_MS)
 
     // 过期请求回一个 error，避免客户端干等
-    const now = Date.now()
     for (const row of this.ctx.storage.sql.exec(
       `SELECT rpc_id, client, scheme FROM pending_requests WHERE status = 'pending' AND expires_at < ?`,
       now,
