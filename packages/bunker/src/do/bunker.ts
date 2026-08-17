@@ -484,7 +484,29 @@ export class BunkerDO extends DurableObject<Env> {
       client, finalPerms, Date.now(), Date.now(),
     )
     await this.audit(client, 'connect', 'allow', finalPerms ? `perms: ${finalPerms}` : '连接成功')
+    void this.ensureProfilePublished().catch((err) => this.logDebug(`publish profile err: ${err}`))
     reply(okResponse(reqId, 'ack'))
+  }
+
+  private async ensureProfilePublished(): Promise<void> {
+    if (!this.secret) return
+    const { finalizeEvent } = await import('nostr-tools/pure')
+    const profileEvent = finalizeEvent(
+      {
+        kind: 0,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: [],
+        content: JSON.stringify({
+          name: 'Signpost User',
+          display_name: 'Signpost User',
+          about: 'Managed by Signpost NIP-46 Remote Signer',
+        }),
+      },
+      this.secret,
+    )
+    this.logDebug('Broadcasting Kind 0 Profile Metadata to relays...')
+    await this.publishToRelays(profileEvent)
+    await this.setMeta('profile_published', '1')
   }
 
   private async reply(client: string, scheme: TransportScheme, res: Nip46Response): Promise<void> {

@@ -89,14 +89,15 @@ router.add('POST', '/api/admin/bunkers', async (req, _p, _u, env) => {
     queryParts.push(`secret=${connectSecret}`)
   }
   const queryString = `?${queryParts.join('&')}`
-  const uri = `bunker://${pubkey}${queryString}`
   const uriNpub = `bunker://${encodeNpub(pubkey)}${queryString}`
+  const uriHex = `bunker://${pubkey}${queryString}`
 
   return json({
     pubkey,
     npub: encodeNpub(pubkey),
-    bunkerUri: uri,
+    bunkerUri: uriNpub,
     bunkerUriNpub: uriNpub,
+    bunkerUriHex: uriHex,
     deviceToken: data.deviceToken,
     relays,
   })
