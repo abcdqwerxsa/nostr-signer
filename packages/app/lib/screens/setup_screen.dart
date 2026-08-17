@@ -28,7 +28,25 @@ class _SetupScreenState extends State<SetupScreen> {
   String? _error;
 
   @override
+  void initState() {
+    super.initState();
+    _pairing.addListener(_onPairingChanged);
+  }
+
+  void _onPairingChanged() {
+    final raw = _pairing.text.trim();
+    if (raw.isEmpty) return;
+    final parsed = parsePairing(raw);
+    if (parsed != null) {
+      _api.text = parsed.apiBase;
+      _pubkey.text = parsed.pubkey;
+      _token.text = parsed.deviceToken;
+    }
+  }
+
+  @override
   void dispose() {
+    _pairing.removeListener(_onPairingChanged);
     _pairing.dispose();
     _api.dispose();
     _pubkey.dispose();
@@ -42,19 +60,37 @@ class _SetupScreenState extends State<SetupScreen> {
       _error = null;
     });
     try {
-      final pasted = parsePairing(_pairing.text);
-      final api = pasted ??
-          BunkerApi(
-            apiBase: _api.text.trim().replaceAll(RegExp(r'/+$'), ''),
-            pubkey: _pubkey.text.trim(),
-            deviceToken: _token.text.trim(),
-          );
+      final pairingText = _pairing.text.trim();
+      final pasted = parsePairing(pairingText);
+      
+      final String apiBase = (pasted?.apiBase ?? _api.text.trim()).replaceAll(RegExp(r'/+$'), '');
+      final String pubkey = pasted?.pubkey ?? _pubkey.text.trim();
+      final String deviceToken = pasted?.deviceToken ?? _token.text.trim();
+
+      if (apiBase.isEmpty || !Uri.parse(apiBase).hasScheme) {
+        throw const FormatException('API BASE 域名格式不正确 (需包含 https://)');
+      }
+      if (pubkey.length != 64) {
+        throw const FormatException('PUBKEY 需为 64 位 hex 私钥派生公钥');
+      }
+      if (deviceToken.length < 8) {
+        throw const FormatException('DEVICE TOKEN 无效或为空');
+      }
+
+      final api = BunkerApi(
+        apiBase: apiBase,
+        pubkey: pubkey,
+        deviceToken: deviceToken,
+      );
+
       // 连通性验证：能拉到 pending 即视为配对成功（401 会抛 ApiException）
       await api.pending();
       await PairingStore().save(api);
       widget.onPaired(api);
     } on ApiException catch (e) {
-      setState(() => _error = ' bunker 拒绝：${e.message}');
+      setState(() => _error = 'bunker 拒绝：${e.message}');
+    } on FormatException catch (e) {
+      setState(() => _error = e.message);
     } catch (e) {
       setState(() => _error = '无法连接：$e');
     } finally {
