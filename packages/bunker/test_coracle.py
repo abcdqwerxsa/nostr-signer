@@ -37,7 +37,7 @@ def decrypt_nip04(sk_hex, pk_hex, encrypted):
     data = unpadder.update(padded_data) + unpadder.finalize()
     return data.decode('utf-8')
 
-bunker_uri = "bunker://87b51f8642c9a83b71c09a0110a4755f4ab8db3249301666b70f71022eacbc1d?relay=wss://nostr.agh.ccwu.cc"
+bunker_uri = "bunker://87b51f8642c9a83b71c09a0110a4755f4ab8db3249301666b70f71022eacbc1d?relay=wss://nostr-relay.nilpote.com"
 parsed = urlparse(bunker_uri)
 target_bunker_pubkey = parsed.netloc or parsed.path.strip('/')
 

@@ -77,7 +77,7 @@ def main():
     else:
         target_bunker_pubkey = raw_target
     query = parse_qs(parsed.query)
-    relays = query.get('relay', ['wss://nostr.agh.ccwu.cc'])
+    relays = query.get('relay', ['wss://nostr-relay.nilpote.com'])
     primary_relay = relays[0]
 
     print(f"==================================================")

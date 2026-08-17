@@ -109,8 +109,8 @@ router.add('GET', '/.well-known/nostr.json', async (_req, _p, u) => {
   const pubkey = /^[0-9a-fA-F]{64}$/.test(name) ? name.toLowerCase() : name
   return cors(json({
     names: { [name]: pubkey },
-    relays: { [pubkey]: ['wss://nostr.agh.ccwu.cc', 'wss://nos.lol'] },
-    nip46: { [pubkey]: ['wss://nostr.agh.ccwu.cc', 'wss://nos.lol'] },
+    relays: { [pubkey]: ['wss://nostr-relay.nilpote.com', 'wss://nostr.agh.ccwu.cc', 'wss://nos.lol'] },
+    nip46: { [pubkey]: ['wss://nostr-relay.nilpote.com', 'wss://nostr.agh.ccwu.cc', 'wss://nos.lol'] },
   }))
 })
 

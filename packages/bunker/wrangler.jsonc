@@ -32,7 +32,7 @@
   "vars": {
     // 默认 relay 列表可在部署时覆盖；键管理 KEK 必须放在 secret：
     // wrangler secret put BUNKER_KEK
-    "DEFAULT_RELAYS": "wss://nostr.agh.ccwu.cc,wss://nos.lol,wss://relay.primal.net,wss://purplepag.es"
+    "DEFAULT_RELAYS": "wss://nostr-relay.nilpote.com,wss://nostr.agh.ccwu.cc,wss://nos.lol,wss://relay.primal.net"
   },
   "observability": {
     "enabled": true
