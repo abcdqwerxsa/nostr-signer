@@ -219,6 +219,7 @@ export class BunkerDO extends DurableObject<Env> {
 
     await this.ctx.storage.setAlarm(Date.now() + ALARM_INTERVAL_MS)
     this.secret = new Uint8Array(hexToBytesLocal(nsecHex))
+    await this.connectAllRelays()
 
     return Response.json({ pubkey, deviceToken: token, relays })
   }
