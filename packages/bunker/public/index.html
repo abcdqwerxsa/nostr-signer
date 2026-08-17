@@ -69,11 +69,16 @@
   button.primary:hover { background: var(--amber); color: var(--ink); }
   button.danger:hover { border-color: var(--bad); color: var(--bad); }
   button:disabled { opacity: .35; cursor: not-allowed; }
-  input[type=text], textarea, select {
+  input, textarea, select {
     background: var(--ink-2); border: 1px solid var(--line-2); color: var(--text);
     font-family: var(--mono); font-size: 12px; padding: 8px 10px; width: 100%;
+    height: 34px; line-height: 1.4; border-radius: 0; appearance: none; -webkit-appearance: none;
   }
-  input[type=text]:focus, textarea:focus { outline: 1px solid var(--amber); }
+  input:focus, textarea:focus, select:focus { outline: 1px solid var(--amber); border-color: var(--amber); }
+  input:read-only, input[readonly] {
+    background: var(--ink-3); border-color: var(--line-2); color: var(--amber);
+    cursor: default; text-overflow: ellipsis;
+  }
   label { display: block; font-size: 10px; letter-spacing: .2em; color: var(--text-dim); text-transform: uppercase; margin-bottom: 6px; }
 
   main { max-width: 1060px; margin: 0 auto; padding: 28px 32px 80px; }
@@ -124,8 +129,10 @@
   .created { border: 1px dashed var(--amber-dim); background: color-mix(in srgb, var(--amber) 6%, transparent); padding: 16px 18px; margin-bottom: 12px; }
   .created .big { color: var(--amber); word-break: break-all; font-size: 12px; line-height: 1.7; }
   .created .note { color: var(--text-dim); font-size: 11px; margin-top: 8px; line-height: 1.7; }
-  .copyline { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
-  .copyline input { flex: 1; color: var(--amber); }
+  .copyline { display: flex; gap: 0; align-items: stretch; margin-top: 6px; }
+  .copyline input { flex: 1; border-right: 0; color: var(--amber); }
+  .copyline input:focus { z-index: 1; }
+  .copyline button { border-left: 1px solid var(--line-2); white-space: nowrap; height: 34px; padding: 0 14px; }
 
   /* ---- 通知条 ---- */
   #toast {
@@ -152,7 +159,7 @@
   <span class="sub">NOSTR REMOTE SIGNER · BUNKER CONSOLE</span>
   <div class="spacer"></div>
   <div class="token-box">
-    <input id="adminToken" type="text" placeholder="ADMIN TOKEN" autocomplete="off" />
+    <input id="adminToken" type="text" placeholder="ADMIN TOKEN" autocomplete="off" spellcheck="false" />
     <button id="saveToken">接入</button>
   </div>
 </header>
@@ -168,19 +175,19 @@
     </div>
     <div id="identityData" class="hidden">
       <div class="row" style="margin-bottom:14px">
-        <div><label>NPUB</label><div class="copyline"><input id="npubOut" readonly /><button data-copy="npubOut">复制</button></div></div>
+        <div><label>NPUB</label><div class="copyline"><input id="npubOut" type="text" readonly spellcheck="false" /><button data-copy="npubOut">复制</button></div></div>
       </div>
       <div class="row" style="margin-bottom:14px">
         <div style="flex:2"><label>BUNKER URI（粘贴到 Damus / Amethyst 等 Nostr Connect 客户端）</label>
-          <div class="copyline"><input id="uriOut" readonly /><button data-copy="uriOut">复制</button></div></div>
+          <div class="copyline"><input id="uriOut" type="text" readonly spellcheck="false" /><button data-copy="uriOut">复制</button></div></div>
       </div>
       <div class="row" id="relayRow"></div>
     </div>
     <div id="createForm" style="margin-top:18px;border-top:1px solid var(--line);padding-top:18px">
       <div class="row">
-        <div><label>导入私钥（64 位 hex，留空则生成新密钥）</label><input id="importHex" type="text" placeholder="d0e1…（hex）" autocomplete="off" /></div>
-        <div><label>CONNECT SECRET（可选，客户端连接口令）</label><input id="connectSecret" type="text" placeholder="留空表示不启用" autocomplete="off" /></div>
-        <div style="flex:0;min-width:auto;display:flex;align-items:flex-end"><button class="primary" id="createBtn">部署 Bunker</button></div>
+        <div><label>导入私钥（64 位 hex，留空则生成新密钥）</label><input id="importHex" type="text" placeholder="d0e1…（hex）" autocomplete="off" spellcheck="false" /></div>
+        <div><label>CONNECT SECRET（可选，客户端连接口令）</label><input id="connectSecret" type="text" placeholder="留空表示不启用" autocomplete="off" spellcheck="false" /></div>
+        <div style="flex:0;min-width:auto;display:flex;align-items:flex-end"><button class="primary" id="createBtn" style="height:34px">部署 Bunker</button></div>
       </div>
       <div id="createdBox" class="created hidden"></div>
     </div>
@@ -218,7 +225,7 @@
       </div>
       <div>
         <label>自动放行的 kind（逗号分隔）</label>
-        <input id="autoKinds" type="text" placeholder="0, 3, 10002" />
+        <input id="autoKinds" type="text" placeholder="0, 3, 10002" spellcheck="false" />
       </div>
       <div>
         <label>消息加解密（nip04/nip44）</label>
@@ -228,23 +235,31 @@
         </select>
       </div>
     </div>
-    <div style="margin-top:16px"><button class="primary" id="savePolicy">保存策略</button></div>
+    <div style="margin-top:16px"><button class="primary" id="savePolicy" style="height:34px">保存策略</button></div>
   </section>
 
   <!-- 设备配对 -->
   <section class="panel">
     <h2>DEVICE PAIRING / 移动审批 App 配对</h2>
     <p style="color:var(--text-dim);font-size:12px;line-height:1.9;margin-bottom:12px">
-      审批 App（本仓库 <b style="color:var(--amber)">app/</b>）需要三个参数。Device token 只在创建时完整显示一次；
-      若丢失可轮换。
+      审批 App（本仓库 <b style="color:var(--amber)">app/</b>）可通过连接参数接入。Device Token 仅在创建时完整显示一次；若丢失可点击轮换。
     </p>
-    <div class="row">
-      <div><label>API BASE</label><div class="copyline"><input id="pairApi" readonly /><button data-copy="pairApi">复制</button></div></div>
-      <div><label>PUBKEY</label><div class="copyline"><input id="pairPubkey" readonly /><button data-copy="pairPubkey">复制</button></div></div>
+    <div class="row" style="margin-bottom:14px">
+      <div><label>API BASE</label><div class="copyline"><input id="pairApi" type="text" readonly spellcheck="false" /><button data-copy="pairApi">复制</button></div></div>
+      <div><label>PUBKEY</label><div class="copyline"><input id="pairPubkey" type="text" readonly spellcheck="false" /><button data-copy="pairPubkey">复制</button></div></div>
     </div>
-    <div class="row" style="margin-top:12px">
-      <div><label>DEVICE TOKEN</label><div class="copyline"><input id="pairToken" readonly placeholder="创建时显示一次，或点右侧轮换" /><button data-copy="pairToken">复制</button></div></div>
-      <div style="flex:0;min-width:auto;display:flex;align-items:flex-end"><button class="danger" id="rotateBtn">轮换 Token</button></div>
+    <div class="row">
+      <div style="flex:2;min-width:280px">
+        <label>DEVICE TOKEN</label>
+        <div class="copyline">
+          <input id="pairToken" type="text" readonly spellcheck="false" placeholder="创建时显示一次，或点右侧轮换" />
+          <button data-copy="pairToken">复制 Token</button>
+        </div>
+      </div>
+      <div style="flex:0;min-width:auto;display:flex;flex-direction:column;justify-content:flex-end">
+        <label style="visibility:hidden">ACTION</label>
+        <button class="danger" id="rotateBtn" style="height:34px;white-space:nowrap;margin-top:6px">轮换 Token</button>
+      </div>
     </div>
   </section>
 
