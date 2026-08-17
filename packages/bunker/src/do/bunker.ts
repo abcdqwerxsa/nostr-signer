@@ -241,18 +241,28 @@ export class BunkerDO extends DurableObject<Env> {
     let ws: WebSocket
     try {
       ws = new WebSocket(url)
-    } catch {
+    } catch (err) {
+      console.warn(`[bunker ${this.pubkey}] WebSocket init error for ${url}:`, err)
       this.scheduleFastReconnect()
       return
     }
     this.relays.set(url, ws)
-    ws.addEventListener('open', () => {
-      this.sendToRelay(ws, [
+
+    const sendSubscription = () => {
+      const reqMsg = [
         'REQ',
         `bkr-${this.pubkey.slice(0, 8)}`,
         { kinds: [REQ_KIND], '#p': [this.pubkey], since: this.cursor() },
-      ])
-    })
+      ]
+      this.sendToRelay(ws, reqMsg)
+    }
+
+    if (ws.readyState === WebSocket.OPEN) {
+      sendSubscription()
+    } else {
+      ws.addEventListener('open', sendSubscription)
+    }
+
     ws.addEventListener('message', (ev: MessageEvent) => this.onRelayMessage(url, ev.data as string))
     const onDown = () => {
       this.relays.delete(url)
@@ -263,7 +273,7 @@ export class BunkerDO extends DurableObject<Env> {
   }
 
   private scheduleFastReconnect(): void {
-    // 利用 alarm 做退避重连：先查最近是否已排了短 alarm
+    // 利用 alarm 做退避重连：排 3s 短 alarm
     this.ctx.storage.setAlarm(Math.min(Date.now() + 3_000, this.nextAlarmOr(Date.now() + 3_000)))
   }
 
@@ -272,12 +282,19 @@ export class BunkerDO extends DurableObject<Env> {
   }
 
   private sendToRelay(ws: WebSocket, msg: unknown[]): void {
-    if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg))
+    try {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify(msg))
+      }
+    } catch (e) {
+      console.warn(`[bunker ${this.pubkey}] sendToRelay failed:`, e)
+    }
   }
 
   private cursor(): number {
     const raw = this.getMeta('req_cursor')
-    return raw ? Number(raw) : Math.floor(Date.now() / 1000) - 600
+    // 允许回溯过去 30 天的事件，防止错失 connect 或由于网络时钟偏差遗漏
+    return raw ? Math.max(0, Number(raw) - 300) : Math.floor(Date.now() / 1000) - 86400 * 30
   }
 
   private onRelayMessage(url: string, data: string): void {
