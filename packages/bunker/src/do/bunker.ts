@@ -485,7 +485,7 @@ export class BunkerDO extends DurableObject<Env> {
     )
     await this.audit(client, 'connect', 'allow', finalPerms ? `perms: ${finalPerms}` : '连接成功')
     void this.ensureProfilePublished().catch((err) => this.logDebug(`publish profile err: ${err}`))
-    reply(okResponse(reqId, 'ack'))
+    reply(okResponse(reqId, secretParam || 'ack'))
   }
 
   private async ensureProfilePublished(): Promise<void> {
